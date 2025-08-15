@@ -1,6 +1,6 @@
 +++
 title = "Blog"
-description = "Thoughts on software development, technology, and coffee."
+description = "My diary on the internet."
 sort_by = "date"
 template = "blog.html"
 page_template = "post.html"
@@ -11,7 +11,7 @@ generate_feeds = true
 lang = "en"
 
 title = "Blog"
-subtitle = "I write about software development, technology trends, and occasionally coffee."
+subtitle = "This blog is where I share my thoughts on software development, technology, my hobbies, and the occasional rabbit holes I wander into."
 
 date_format = "%b %-d, %Y"
 

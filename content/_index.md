@@ -10,11 +10,12 @@ footer = false
 # If you don't want to display id/bio/avatar, simply comment out that line
 name = "Uday Jadhav"
 id = "udqy"
-bio = "Software Engineer | Open Source Enthusiast | Coffee Addict"
-# avatar = "img/avatar.webp"
+bio = "Making machines think, living in Linux, and roaming the internet."
 links = [
     { name = "GitHub", icon = "github", url = "https://github.com/udqy" },
     { name = "Twitter", icon = "twitter", url = "https://x.com/udayjdv" },
+    { name = "Strava", icon = "strava", url = "https://www.strava.com/athletes/95821197" },
+    { name = "Linkedin", icon = "linkedin", url = "https://www.linkedin.com/in/udaysj/" },
     { name = "Email", icon = "email", url = "mailto:udaygitlog@gmail.com" },
 ]
 
@@ -25,8 +26,8 @@ recent_more_text = "more »"
 date_format = "%b %-d, %Y"
 +++
 
-Hi, I'm Uday! 👋
+Hey there, I'm Uday! 
 
-I'm a passionate software engineer who loves building things that make a difference. When I'm not coding, you'll find me exploring new technologies, contributing to open source projects, or brewing the perfect cup of coffee.
+I solve problems, break things, and <span style="opacity:0.5">(hopefully)</span> learn from them. 
 
-This blog is where I share my thoughts on software development, technology trends, and the occasional coffee review. Feel free to reach out if you'd like to connect!
+This is my little corner of the internet, where I share my thoughts on software development, technology, my hobbies, and the occasional rabbit holes I wander into. Feel free to reach out for a quick chat!
