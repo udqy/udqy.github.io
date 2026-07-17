@@ -977,6 +977,20 @@ body.prose-page {
       margin-left: auto;
     }
 
+    @media (max-width: 480px) {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.15em;
+
+      .line {
+        display: none;
+      }
+
+      .date {
+        margin-left: 0;
+      }
+    }
+
     position: relative;
     &.featured::before {
       content: '*';
@@ -1079,6 +1093,18 @@ body.homepage {
     #id {
       margin-left: 0.75em;
       color: var(--primary-color);
+    }
+
+    // stack the two names on narrow screens
+    @media (max-width: 480px) {
+      #text > div:first-child {
+        display: flex;
+        flex-direction: column;
+      }
+
+      #id {
+        margin-left: 0;
+      }
     }
 
     #bio {
