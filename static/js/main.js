@@ -189,6 +189,9 @@ function enableReaction() {
   if (!container) return;
   const endpoint = container.dataset.endpoint;
   const slug = location.pathname.split('/').filter(Boolean).pop();
+  const icons = {
+    'like': '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>'
+  };
   let state = { error: false, reaction: {} };
   const render = () => {
     const btns = Object.entries(state.reaction).map(([emoji, [count, reacted]])=> {
@@ -196,7 +199,8 @@ function enableReaction() {
       span.textContent = count;
       const btn = document.createElement('button');
       if (reacted) btn.classList.add('reacted');
-      btn.append(emoji, span);
+      btn.insertAdjacentHTML('afterbegin', icons[emoji] || emoji);
+      btn.append(span);
       btn.onclick = () => toggle(emoji);
       return btn;
     });

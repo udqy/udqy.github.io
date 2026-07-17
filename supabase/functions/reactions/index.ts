@@ -28,7 +28,7 @@ serve(async (req) => {
       .maybeSingle();
 
     return new Response(
-      JSON.stringify({ "\u2764\ufe0f": [data?.count ?? 0, false] }),
+      JSON.stringify({ "like": [data?.count ?? 0, false] }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   }
@@ -51,7 +51,7 @@ serve(async (req) => {
       .upsert({ slug, count: next }, { onConflict: "slug" });
 
     return new Response(
-      JSON.stringify({ "\u2764\ufe0f": [next, false] }),
+      JSON.stringify({ "like": [next, false] }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   }
