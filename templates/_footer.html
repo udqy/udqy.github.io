@@ -10,7 +10,7 @@
       {% set_global rss_path = "/" ~ config.feed_filenames.0 %}
     {% endif %}
     {% if section.generate_feeds or config.generate_feeds %}
-    <a id="rss-btn" href="/{{ rss_path }}">RSS</a>
+    <a id="rss-btn" href="{{ rss_path }}">RSS</a>
     {% endif %}
     {% endif %}
 
@@ -20,7 +20,7 @@
 
 {% if blog_section_path is defined and section.path is starting_with(blog_section_path) %}
 {% if section.generate_feeds or config.generate_feeds %}
-{% set link = "/" ~ rss_path %}
+{% set link = rss_path %}
 <dialog id="rss-mask">
   <div>
     <a href="{{ link }}">{{ link }}</a>
