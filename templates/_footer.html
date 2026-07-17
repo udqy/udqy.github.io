@@ -2,16 +2,6 @@
 {% set blog_section_path = config.extra.blog_section_path %}
 {% endif %}
 <footer>
-  <div class="left">
-    <div class="copyright">
-      {{ config.extra.footer_copyright }}
-      {% if config.extra.footer_credits %}
-      <span>|</span>
-      Built with <a href="https://www.getzola.org" rel="noreferrer" target="_blank">zola</a> and <a href="https://github.com/isunjn/serene" rel="noreferrer" target="_blank">serene</a>
-      {% endif %}
-    </div>
-  </div>
-
   <div class="right">
     {% if blog_section_path is defined and section.path is starting_with(blog_section_path) %}
     {% if section.generate_feeds %}
@@ -24,14 +14,7 @@
     {% endif %}
     {% endif %}
 
-    {% if not config.extra.force_theme %}
-    {% set moon_icon = load_data(path="icon/moon.svg") %}
-    {% set sun_icon = load_data(path="icon/sun.svg") %}
-    <button id="theme-toggle" aria-label="theme switch">
-      <span class="moon-icon">{{ moon_icon | safe }}</span>
-      <span class="sun-icon">{{ sun_icon | safe }}</span>
-    </button>
-    {% endif %}
+
   </div>
 </footer>
 

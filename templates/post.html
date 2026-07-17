@@ -24,6 +24,18 @@
 
 {% block head %}
 <link id="hl" rel="stylesheet" type="text/css" href="/giallo-{% if config.extra.force_theme == "dark" %}dark{% else %}light{% endif %}.css" />
+{% if not config.extra.force_theme %}
+{% set moon_icon = load_data(path="icon/moon.svg") %}
+{% set sun_icon = load_data(path="icon/sun.svg") %}
+<style>
+.theme-toggle-btn { line-height: 0; background: none; border: none; cursor: pointer; color: var(--text-pale-color); padding: 4px; vertical-align: middle; }
+.theme-toggle-btn:hover { color: var(--primary-color); }
+body.dark .theme-toggle-btn .sun-icon { display: inline; }
+body.dark .theme-toggle-btn .moon-icon { display: none; }
+.theme-toggle-btn .sun-icon { display: none; }
+
+</style>
+{% endif %}
 {% if page.extra.math %}
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" integrity="sha384-nB0miv6/jRmo5UMMR1wu3Gz6NLsoTkbqJghGIsx//Rlm+ZU03BU6SQNC66uf4l5+" crossorigin="anonymous">
 <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js" integrity="sha384-7zkQWkzuo3B5mTepMUcHkMB5jZaolc2xDwL6VFqjFALcbeS9Ggm/Yr2r3Dy4lfFg" crossorigin="anonymous"></script>
@@ -78,7 +90,15 @@
     {% endif %}
   </aside>
   <main>
-    {{ macros::back_link(path = section.path) }}
+    <div style="display:flex;align-items:center">
+      {{ macros::back_link(path = section.path) }}
+      {% if not config.extra.force_theme %}
+      <button class="theme-toggle-btn" aria-label="theme switch" style="margin-right:15px;margin-left:auto">
+        <span class="moon-icon">{{ moon_icon | safe }}</span>
+        <span class="sun-icon">{{ sun_icon | safe }}</span>
+      </button>
+      {% endif %}
+    </div>
 
     <div>
       {% if page.extra.copy is defined %}{% set allow_copy = page.extra.copy %}{% else %}{% set allow_copy = section.extra.copy %}{% endif %}
@@ -101,7 +121,7 @@
           <div id="tags">
             {% for tag in page.taxonomies.tags -%}
             {% set tag_slugify = tag | slugify -%}
-            <a class="instant" href="{{ config.base_url ~ '/tags/' ~ tag_slugify }}"><span>#</span>{{ tag }}</a>
+            <a class="instant" href="/tags/{{ tag_slugify }}">{{ tag }}</a>
             {%- endfor %}
           </div>
           {% endif %}

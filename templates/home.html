@@ -83,7 +83,7 @@
     {% set section_md_path = blog_section_path ~ "/_index.md" %}
     {% set blog_section = get_section(path=section_md_path) %}
     <section class="layout-list">
-      <h2 style="margin: 2em 0 1em; padding: 0 0.9375rem; font-size: 1.15em;">Blogs</h2>
+      <h2 style="margin: 2em 0 1em; padding: 0 0.9375rem; font-size: 1.15em;">Recents</h2>
       <div class="post-list">
         {% for post in blog_section.pages | slice(end=section.extra.recent_max) %}
         <a class="post instant {% if post.extra.featured %}featured{% endif %}" href="{{ post.path }}">

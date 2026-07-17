@@ -1067,13 +1067,13 @@ body.homepage {
     #text {
       display: flex;
       flex-direction: column;
-      justify-content: space-around;
+      justify-content: flex-start;
       line-height: 1.5;
-      gap: 1em;
+      gap: 0.25em;
     }
 
     img + #text {
-        gap: 0.75em;
+        gap: 0.25em;
     }
 
     #id {

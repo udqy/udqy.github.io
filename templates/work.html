@@ -1,0 +1,71 @@
+{% import "macros/prose.html" as macros %}
+{% extends "_base.html" %}
+
+{% block page %}work{% endblock page%}
+{% block lang %}{% if section.extra.lang %}{{ section.extra.lang }}{% else %}{{ section.lang }}{% endif %}{% endblock lang %}
+{% block title %}{{ section.title }}{% endblock title %}
+{% block desc %}
+  {% if section.description %}
+    {% set desc = section.description %}
+  {% else %}
+    {% set desc = config.description %}
+  {% endif %}
+  <meta name="description" content="{{ desc }}">
+{% endblock desc %}
+
+{% block head %}
+<link id="hl" rel="stylesheet" type="text/css" href="/giallo-{% if config.extra.force_theme == "dark" %}dark{% else %}light{% endif %}.css" />
+<style>
+body.work #wrapper {
+  margin: 0 auto;
+  max-width: var(--main-max-width);
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+body.work main {
+  margin: 1em 0;
+}
+.timeline { position: relative; padding-left: 1.5rem; padding-right: 15px; }
+.timeline::before { content: ''; position: absolute; left: 0.375rem; top: 0.25rem; bottom: 0; width: 2px; background: var(--text-decoration-color); }
+.timeline-item { position: relative; margin-bottom: 2rem; }
+.timeline-marker { position: absolute; left: -1.5rem; top: 0.35rem; width: 0.75rem; height: 0.75rem; border-radius: 50%; background: var(--primary-color); border: 2px solid var(--bg-color); }
+.timeline-date { font-size: 0.8em; color: var(--text-pale-color); margin-bottom: 0.15rem; }
+.timeline-company { font-size: 0.9em; color: var(--text-pale-color); margin-bottom: 0.5rem; }
+.timeline-item h3 { margin: 0 0 0.15rem; font-size: 1.1em; }
+.timeline-item p { margin: 0.5rem 0; font-size: 0.9em; }
+.timeline-tags { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.5rem; }
+.timeline-tags .tag { font-size: 0.75em; color: var(--primary-color); }
+</style>
+{% endblock head %}
+
+{% block content %}
+<div id="wrapper">
+  {{ macros::back_link(path = "/") }}
+  {% include "_section_title.html" %}
+  <main class="layout-list">
+    <div class="timeline">
+      {% for page in section.pages %}
+      <div class="timeline-item">
+        <div class="timeline-marker"></div>
+        <div class="timeline-content">
+          <div class="timeline-date">{{ page.extra.date_range }}</div>
+          <h3>{{ page.title }}</h3>
+          <div class="timeline-company">{{ page.extra.company }}</div>
+          <p>{{ page.content | striptags | trim }}</p>
+          {% if page.taxonomies.tags is defined %}
+          <div class="timeline-tags">
+            {% for tag in page.taxonomies.tags %}
+            <span class="tag">{{ tag }}</span>
+            {% endfor %}
+          </div>
+          {% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </main>
+  {% include "_footer.html" %}
+</div>
+{% endblock content %}

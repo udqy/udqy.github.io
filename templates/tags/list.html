@@ -20,7 +20,7 @@
     <h1 class="title">Tags</h1>
     <div class="tags">
       {% for tag in terms -%}
-      <a class="instant" href="{{ tag.permalink }}"># {{ tag.name | lower }}</a>
+      <a class="instant" href="{{ tag.permalink }}">{{ tag.name | lower }}</a>
       {% endfor %}
     </div>
   </main>

@@ -8,6 +8,7 @@ lang = 'en'
 footer = false
 
 # If you don't want to display id/bio/avatar, simply comment out that line
+avatar = "img/avatar.jpg"
 name = "Uday Jadhav"
 id = "udqy"
 bio = "Making machines think, living in Linux, and roaming the internet."

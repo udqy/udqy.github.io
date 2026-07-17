@@ -1,8 +1,7 @@
 function enableThemeToggle() {
-  const themeToggle = document.querySelector('#theme-toggle');
-  if (!themeToggle) return;
+  const toggles = document.querySelectorAll('#theme-toggle, .theme-toggle-btn');
+  if (!toggles.length) return;
   const hlLink = document.querySelector('link#hl');
-  const preferDark = window.matchMedia("(prefers-color-scheme: dark)");
   function toggleTheme(theme) {
     if (theme == "dark") document.body.classList.add('dark'); else document.body.classList.remove('dark');
     if (hlLink) hlLink.href = `/giallo-${theme}.css`;
@@ -20,7 +19,7 @@ function enableThemeToggle() {
     window.removeEventListener('message', initGiscusTheme);
   }
   window.addEventListener('message', initGiscusTheme);
-  themeToggle.addEventListener('click', () => toggleTheme(sessionStorage.getItem("theme") == "dark" ? "light" : "dark"));
+  toggles.forEach(t => t.addEventListener('click', () => toggleTheme(sessionStorage.getItem("theme") == "dark" ? "light" : "dark")));
   if (sessionStorage.getItem("theme") == "dark") toggleTheme("dark");
 }
 

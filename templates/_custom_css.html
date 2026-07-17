@@ -42,7 +42,7 @@
     --code-font: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
     --homepage-max-width: 48rem;
     --main-max-width: 48rem;
-    --avatar-size: 3.75rem;
+    --avatar-size: 7rem;
     --font-size: 1.4375rem;
     --line-height: 1.75;
     --img-border-radius: 0;
@@ -54,6 +54,23 @@
     --block-code-border-radius: 0;
     --block-code-border-color: var(--primary-color);
     --detail-border-color: var(--primary-color);
+  }
+
+  #right a svg,
+  .theme-toggle-btn svg,
+  #theme-toggle svg {
+    width: 24px;
+    height: 24px;
+  }
+
+  @media (max-width: 425px) {
+    body.homepage #wrapper,
+    body.blog #wrapper,
+    body.tag-list #wrapper,
+    body.tag-single #wrapper,
+    body.work #wrapper {
+      padding: 0 12px;
+    }
   }
 
 </style>
