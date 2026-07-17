@@ -18,7 +18,7 @@ outdate_alert = false
 math = false
 mermaid = false
 featured = false
-reaction = false
+reaction = true
 +++
 
 I will be writing soon!

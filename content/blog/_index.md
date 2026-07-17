@@ -19,6 +19,7 @@ categorized = false # posts can be categorized
 back_to_top = true # show back-to-top button
 toc = true # show table-of-contents
 comment = false # enable comment
+reaction = true # enable reaction
 copy = true # show copy button in code block
 
 outdate_alert = false
