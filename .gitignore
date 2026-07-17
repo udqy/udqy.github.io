@@ -2,4 +2,5 @@ public/
 .vscode/
 static/processed_images
 .cache/
-.idea/supabase/.temp/
+.idea/
+supabase/.temp/
