@@ -15,7 +15,7 @@
 
 {% block content %}
 <div id="wrapper">
-  {{ macros::back_link(path = get_url(path="/")) }}
+  {{ macros::back_link(path = "/") }}
   {% include "_section_title.html" %}
   <main class="layout-list">
     {% if section.extra.categorized %}
@@ -27,7 +27,7 @@
     <h2 class="category">{{ category_name }}</h2>
     <div class="post-list categorized">
       {% for post in posts %}
-      <a class="post instant {% if post.extra.featured %}featured{% endif %}" href="{{ post.permalink }}">
+      <a class="post instant {% if post.extra.featured %}featured{% endif %}" href="{{ post.path }}">
         <span>{{ post.title }}</span>
         <span class="date">{{ post.date | date(format=section.extra.date_format) }}</span>
       </a>
@@ -37,7 +37,7 @@
     {% else %}
     <div class="post-list">
       {% for post in section.pages %}
-      <a class="post instant {% if post.extra.featured %}featured{% endif %}" href="{{ post.permalink }}">
+      <a class="post instant {% if post.extra.featured %}featured{% endif %}" href="{{ post.path }}">
         <span>{{ post.title }}</span>
         <span class="date">{{ post.date | date(format=section.extra.date_format) }}</span>
       </a>

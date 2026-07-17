@@ -15,14 +15,14 @@
 
 {% block content %}
 <div id="wrapper">
-  {{ macros::back_link(path = get_url(path="/tags")) }}
+  {{ macros::back_link(path = "/tags") }}
   <main class="layout-list">
     <div class="title">
       <span># {{ term.name }}</span>
     </div>
     <div class="post-list">
       {% for post in term.pages %}
-      <a class="post instant {% if post.extra.featured %}featured{% endif %}" href="{{ post.permalink }}">
+      <a class="post instant {% if post.extra.featured %}featured{% endif %}" href="{{ post.path }}">
         <span>{{ post.title }}</span>
         <span class="date">{{ post.date | date(format=section.extra.date_format) }}</span>
       </a>

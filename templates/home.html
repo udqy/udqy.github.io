@@ -8,13 +8,11 @@
 {% endblock desc %}
 
 {% block head %}
-{% if config.markdown.highlight_theme == "css" %}
   {% if config.extra.force_theme == "dark" %}
-    <link id="hl" rel="stylesheet" type="text/css" href="{{ get_url(path='hl-dark.css') }}" />
+    <link id="hl" rel="stylesheet" type="text/css" href="/giallo-dark.css" />
   {% else %}
-    <link id="hl" rel="stylesheet" type="text/css" href="{{ get_url(path='hl-light.css') }}" />
+    <link id="hl" rel="stylesheet" type="text/css" href="/giallo-light.css" />
   {% endif %}
-{% endif %}
 {% if section.extra.math %}
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" integrity="sha384-nB0miv6/jRmo5UMMR1wu3Gz6NLsoTkbqJghGIsx//Rlm+ZU03BU6SQNC66uf4l5+" crossorigin="anonymous">
 <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js" integrity="sha384-7zkQWkzuo3B5mTepMUcHkMB5jZaolc2xDwL6VFqjFALcbeS9Ggm/Yr2r3Dy4lfFg" crossorigin="anonymous"></script>
@@ -41,14 +39,12 @@
   <main>
     <section id="info">
       {% if section.extra.avatar %}
-      <img src="{{ get_url(path=section.extra.avatar) }}" alt="avatar">
+      <img src="/{{ section.extra.avatar }}" alt="avatar">
       {% endif %}
       <div id="text">
         <div>
           <span id="name">{{ section.extra.name }}</span>
-          {% if section.extra.id %}
-          <span id="id">@{{ section.extra.id }}</span>
-          {% endif %}
+          <span id="id" style="font-family: 'Google Sans', sans-serif; font-weight: 500;">उदय जाधव</span>
         </div>
         {% if section.extra.bio %}
         <div id="bio"> {{ section.extra.bio }} </div>
@@ -58,7 +54,7 @@
     <section id="links">
       <div id="left">
         {% for section in config.extra.sections %}
-        <a {% if section.is_external %}href="{{ section.path }}" target="_blank" rel='noreferrer noopener'{% else %}href="{{ get_url(path=section.path) }}" class="instant"{% endif %}>{{ section.name }}</a>
+        <a {% if section.is_external %}href="{{ section.path }}" target="_blank" rel='noreferrer noopener'{% else %}href="{{ section.path }}" class="instant"{% endif %}>{{ section.name }}</a>
         {% endfor %}
       </div>
       <div id="right">
@@ -87,9 +83,10 @@
     {% set section_md_path = blog_section_path ~ "/_index.md" %}
     {% set blog_section = get_section(path=section_md_path) %}
     <section class="layout-list">
+      <h2 style="margin: 2em 0 1em; padding: 0 0.9375rem; font-size: 1.15em;">Blogs</h2>
       <div class="post-list">
         {% for post in blog_section.pages | slice(end=section.extra.recent_max) %}
-        <a class="post instant {% if post.extra.featured %}featured{% endif %}" href="{{ post.permalink }}">
+        <a class="post instant {% if post.extra.featured %}featured{% endif %}" href="{{ post.path }}">
           <span>{{ post.title }}</span>
           <span class="line"></span>
           <span class="date">{{ post.date | date(format=section.extra.date_format) }}</span>
@@ -109,7 +106,7 @@
 {% endblock content %}
 
 {% block script %}
-<script src="{{ get_url(path='js/lightense.min.js') }}"></script>
+<script src="/js/lightense.min.js"></script>
 {% if section.extra.mermaid %}
 <script type="module">
   import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
