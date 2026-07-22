@@ -7,7 +7,7 @@
 
 base_url = "https://udqy.github.io/"
 title = "Uday Jadhav"
-description = "udays blog"
+description = "Making machines think, living in Linux, and roaming the internet."
 default_language = "en"
 theme = "serene"
 output_dir = "public"
@@ -56,3 +56,8 @@ not_found_recover_text = "« back to home »"
 reaction = true # Whether to enable anonymous emoji reactions (Note: You need to set up a working api endpoint to enable this feature)
 reaction_align = "right" # "left" | "center" | "right"
 reaction_endpoint = "https://jbueblpurujnowslnroy.supabase.co/functions/v1/reactions"
+
+# Visitor count on the homepage, proxied from Umami (the API key stays server-side).
+# Leave empty to hide the line entirely.
+visitors_endpoint = "https://jbueblpurujnowslnroy.supabase.co/functions/v1/visitors"
+visitors_text = "visitors so far"

@@ -1,0 +1,63 @@
+// A primary-color glow trailing the cursor. Homepage only -- main.js gates on
+// body.homepage and never builds the element elsewhere. Kept out of main.scss
+// (which is a patched copy of the theme's) so it stays easy to tune or drop.
+
+:root {
+  --glow-size: 34rem;
+  --glow-opacity: 0.09;
+  --glow-ease: 0.14; // trail lag, consumed by JS
+}
+
+body.dark {
+  // The tint reads weaker against a near-black background, so lift it.
+  --glow-opacity: 0.15;
+}
+
+#cursor-glow {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: var(--glow-size);
+  height: var(--glow-size);
+  // Shift by half so translate() positions the glow's centre, not its corner.
+  margin-top: calc(var(--glow-size) / -2);
+  margin-left: calc(var(--glow-size) / -2);
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0;
+  will-change: transform;
+  transition: opacity 0.5s ease;
+  background: radial-gradient(
+    circle closest-side,
+    var(--primary-color) 0%,
+    transparent 100%
+  );
+
+  &.visible {
+    opacity: var(--glow-opacity);
+  }
+}
+
+// The glow is a positioned element, so page content needs its own stacking
+// context to stay painted above it. Scoped, so this can't perturb stacking on
+// pages that never build a glow.
+body.homepage #wrapper {
+  position: relative;
+  z-index: 1;
+}
+
+#visitor-count {
+  margin: 2.5em 0 0;
+  padding: 0 0.9375rem;
+  font-size: 0.75em;
+  color: var(--text-pale-color);
+  font-variant-numeric: tabular-nums;
+}
+
+// No cursor to follow on touch devices, and the trail is motion some people
+// don't want.
+@media (hover: none), (pointer: coarse), (prefers-reduced-motion: reduce) {
+  #cursor-glow {
+    display: none;
+  }
+}

@@ -245,6 +245,78 @@ function enableReaction() {
 }
 
 enableThemeToggle();
+function enableCursorGlow() {
+  // Homepage only. Every other page on this site is for reading, and a tint
+  // tracking the cursor pulls the eye while you're mid-paragraph.
+  if (!document.body.classList.contains('homepage')) return;
+
+  // Bail on touch devices and for anyone who asked for less motion; the
+  // stylesheet hides the glow in those cases, so don't run the loop either.
+  const still = window.matchMedia('(hover: none), (pointer: coarse), (prefers-reduced-motion: reduce)');
+  if (still.matches) return;
+
+  const glow = document.createElement('div');
+  glow.id = 'cursor-glow';
+  glow.setAttribute('aria-hidden', 'true');
+  document.body.append(glow);
+
+  const ease = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--glow-ease')) || 0.14;
+  let targetX = 0, targetY = 0;   // where the cursor is
+  let x = 0, y = 0;               // where the glow currently is
+  let started = false, frame = null;
+
+  const tick = () => {
+    // Exponential smoothing, so the glow trails the cursor instead of snapping.
+    x += (targetX - x) * ease;
+    y += (targetY - y) * ease;
+    glow.style.transform = `translate3d(${x}px, ${y}px, 0)`;
+
+    // Stop looping once it has effectively caught up, and let the next
+    // pointermove restart it -- no idle rAF burning battery.
+    if (Math.abs(targetX - x) < 0.5 && Math.abs(targetY - y) < 0.5) {
+      frame = null;
+      return;
+    }
+    frame = requestAnimationFrame(tick);
+  };
+
+  window.addEventListener('pointermove', (e) => {
+    if (e.pointerType !== 'mouse') return;
+    targetX = e.clientX;
+    targetY = e.clientY;
+
+    if (!started) {
+      // Jump to the first known position rather than sweeping in from 0,0.
+      started = true;
+      x = targetX;
+      y = targetY;
+      glow.style.transform = `translate3d(${x}px, ${y}px, 0)`;
+      requestAnimationFrame(() => glow.classList.add('visible'));
+    }
+    if (!frame) frame = requestAnimationFrame(tick);
+  }, { passive: true });
+
+  document.addEventListener('mouseleave', () => glow.classList.remove('visible'));
+  document.addEventListener('mouseenter', () => { if (started) glow.classList.add('visible'); });
+}
+
+function enableVisitorCount() {
+  const el = document.querySelector('#visitor-count');
+  if (!el) return;
+
+  fetch(el.dataset.endpoint)
+    .then(resp => resp.ok ? resp.json() : Promise.reject(resp.status))
+    .then(({ visitors }) => {
+      if (typeof visitors !== 'number') return;
+      // toLocaleString gives the reader their own thousands separator.
+      el.textContent = `${visitors.toLocaleString()} ${el.dataset.text}`;
+      el.hidden = false;
+    })
+    .catch(() => { /* leave it hidden rather than show a broken or zero count */ });
+}
+
+enableCursorGlow();
+enableVisitorCount();
 enablePrerender();
 enableRssMask();
 if (document.body.classList.contains('post')) {

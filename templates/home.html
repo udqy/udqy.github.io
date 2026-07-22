@@ -98,6 +98,13 @@
       </div>
     </section>
   {% endif %}
+    {% if config.extra.visitors_endpoint %}
+    {#- Stays hidden until the count actually arrives, so a failed or slow
+        request leaves no empty line behind. -#}
+    <p id="visitor-count" hidden
+       data-endpoint="{{ config.extra.visitors_endpoint }}"
+       data-text="{{ config.extra.visitors_text }}"></p>
+    {% endif %}
   </main>
   {% if section.extra.footer %}
     {% include "_footer.html" %}
