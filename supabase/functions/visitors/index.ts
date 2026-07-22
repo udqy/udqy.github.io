@@ -1,21 +1,19 @@
-// Public read-only proxy for the Umami visitor total.
+// Visitor counter.
 //
-// Umami Cloud has no unauthenticated endpoint, and its API key must never reach
-// the browser -- it can read every site on the account. So the key stays in the
-// function's env and the browser only ever sees a single integer.
+// One GET both records the caller and returns the running total, so the page
+// needs a single request. Identity is a salted daily hash of IP + user agent,
+// computed here and never stored in raw form -- the browser sends nothing
+// identifying, and the database only ever sees the digest.
 
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const SITE_ORIGIN = "https://udqy.github.io";
-const UMAMI_API = "https://api.umami.is/v1";
 
-// Umami wants an explicit window; this one predates the site, so it reads as
-// "all time" without relying on the API accepting 0.
-const SITE_EPOCH_MS = Date.UTC(2025, 0, 1);
-
-// Umami Cloud rate-limits, and this number moves slowly. One upstream call per
-// 10 minutes per warm instance is plenty.
-const CACHE_TTL_MS = 10 * 60 * 1000;
+// Obvious crawlers shouldn't inflate a number meant to describe people. This
+// won't catch everything, and it isn't meant to.
+const BOT_RE =
+  /bot|crawl|spider|slurp|bingpreview|facebookexternalhit|headless|lighthouse|monitor|preview|scrape|curl|wget|python-requests|go-http-client/i;
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": SITE_ORIGIN,
@@ -24,45 +22,46 @@ const corsHeaders = {
   "Vary": "Origin",
 };
 
+const supabase = createClient(
+  Deno.env.get("SUPABASE_URL")!,
+  Deno.env.get("SUPABASE_ANON_KEY")!,
+);
+
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), {
     status,
     headers: {
       ...corsHeaders,
       "Content-Type": "application/json",
-      // Let the CDN and browser share the cached figure too.
-      "Cache-Control": "public, max-age=600",
+      // This request has a side effect, so it must not be replayed from cache.
+      "Cache-Control": "no-store",
     },
   });
 
-let cache: { visitors: number; at: number } | null = null;
+/** Salted sha256 of IP + user agent + today, as lowercase hex. */
+async function visitorHash(req: Request, salt: string): Promise<string> {
+  // Supabase sits behind a proxy; the client IP is the first entry.
+  const ip = (req.headers.get("x-forwarded-for") ?? "").split(",")[0].trim();
+  const ua = req.headers.get("user-agent") ?? "";
+  const day = new Date().toISOString().slice(0, 10);
 
-async function fetchVisitors(): Promise<number> {
-  if (cache && Date.now() - cache.at < CACHE_TTL_MS) return cache.visitors;
+  const data = new TextEncoder().encode(`${salt}|${ip}|${ua}|${day}`);
+  const digest = await crypto.subtle.digest("SHA-256", data);
 
-  const apiKey = Deno.env.get("UMAMI_API_KEY");
-  const websiteId = Deno.env.get("UMAMI_WEBSITE_ID");
-  if (!apiKey || !websiteId) throw new Error("umami env not configured");
+  return Array.from(new Uint8Array(digest))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+}
 
-  const url =
-    `${UMAMI_API}/websites/${websiteId}/stats?startAt=${SITE_EPOCH_MS}&endAt=${Date.now()}`;
+/** Current total without recording anything. */
+async function readTotal(): Promise<number | null> {
+  const { data, error } = await supabase
+    .from("site_stats")
+    .select("count")
+    .eq("key", "visitors")
+    .maybeSingle();
 
-  const res = await fetch(url, {
-    headers: { "Accept": "application/json", "x-umami-api-key": apiKey },
-  });
-  if (!res.ok) throw new Error(`umami responded ${res.status}`);
-
-  // Umami has shipped both a flat `visitors: 123` and a nested
-  // `visitors: { value: 123 }`; accept either so a version bump can't break us.
-  const stats = await res.json();
-  const raw = stats?.visitors;
-  const visitors = typeof raw === "number" ? raw : raw?.value;
-  if (typeof visitors !== "number" || !Number.isFinite(visitors)) {
-    throw new Error("unexpected umami payload");
-  }
-
-  cache = { visitors, at: Date.now() };
-  return visitors;
+  return error ? null : (data?.count ?? 0);
 }
 
 serve(async (req) => {
@@ -73,12 +72,31 @@ serve(async (req) => {
     return new Response("Method not allowed", { status: 405, headers: corsHeaders });
   }
 
-  try {
-    return json({ visitors: await fetchVisitors() });
-  } catch (err) {
-    // Serve a stale figure rather than nothing if Umami is briefly unreachable.
-    if (cache) return json({ visitors: cache.visitors, stale: true });
-    console.error("visitors:", err instanceof Error ? err.message : err);
-    return json({ error: "unavailable" }, 503);
+  const salt = Deno.env.get("VISITOR_SALT");
+  const ua = req.headers.get("user-agent") ?? "";
+
+  // Bots and a missing salt both mean "show the number, record nothing".
+  // Without the salt the hash would be guessable, which would let anyone
+  // suppress a real visitor's count by claiming their identifier first.
+  if (!salt || !ua || BOT_RE.test(ua)) {
+    if (!salt) console.error("visitors: VISITOR_SALT is not set");
+    const total = await readTotal();
+    return total === null
+      ? json({ error: "unavailable" }, 503)
+      : json({ visitors: total });
   }
+
+  const { data, error } = await supabase.rpc("count_visitor", {
+    p_hash: await visitorHash(req, salt),
+  });
+
+  if (error) {
+    console.error("visitors:", error.message);
+    const total = await readTotal();
+    return total === null
+      ? json({ error: "unavailable" }, 503)
+      : json({ visitors: total });
+  }
+
+  return json({ visitors: data });
 });
