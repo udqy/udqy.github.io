@@ -10,9 +10,32 @@
   <script defer src="https://cloud.umami.is/script.js" data-website-id="76d263b9-c357-4c92-8695-1426d3ab35e1"></script>
   <title>{% block title %}{% endblock title %}</title>
 
+  <link rel="icon" href="{{ get_url(path='img/favicon.ico') }}" sizes="32x32">
+  <link rel="icon" type="image/png" sizes="16x16" href="{{ get_url(path='img/favicon-16x16.png') }}">
+  <link rel="icon" type="image/png" sizes="32x32" href="{{ get_url(path='img/favicon-32x32.png') }}">
+  <link rel="apple-touch-icon" sizes="180x180" href="{{ get_url(path='img/apple-touch-icon.png') }}">
+
+  {# Social cards. Scrapers don't resolve relative URLs, so these must be absolute. #}
+  {% block social %}
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="{{ config.title }}">
+  <meta property="og:title" content="{{ config.title }}">
+  <meta property="og:description" content="{{ config.description }}">
+  <meta property="og:url" content="{{ get_url(path='/') }}">
+  <meta property="og:image" content="{{ get_url(path='img/og-default.png') }}">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="{{ config.title }}">
+  <meta name="twitter:description" content="{{ config.description }}">
+  <meta name="twitter:image" content="{{ get_url(path='img/og-default.png') }}">
+  <meta name="twitter:creator" content="@udayjdv">
+  {% endblock social %}
+
   {% include "_custom_font.html" %}
   {% include "_custom_css.html" %}
   <link rel="stylesheet" href="/main.css">
+  <link rel="stylesheet" href="/effects.css">
   {% block head %}{% endblock head %}
   {% include "_head_extend.html" %}
 </head>

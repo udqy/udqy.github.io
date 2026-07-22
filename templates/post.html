@@ -22,6 +22,47 @@
   <meta name="description" content="{{ desc }}">
 {% endblock desc %}
 
+{% block social %}
+{#- Most posts set no description and have no <!-- more --> marker, so fall all
+    the way through to the body text rather than repeating the site tagline. -#}
+{%- if page.description -%}
+  {%- set social_desc = page.description -%}
+{%- elif page.summary -%}
+  {%- set social_desc = page.summary | striptags | replace(from="
+", to=" ") | trim | truncate(length=180) -%}
+{%- elif page.content -%}
+  {%- set social_desc = page.content | striptags | replace(from="
+", to=" ") | trim | truncate(length=180) -%}
+{%- else -%}
+  {%- set social_desc = config.description -%}
+{%- endif -%}
+{#- page.extra.image must be a site-relative path, e.g. "images/og/my-post.png" -#}
+{%- if page.extra.image -%}
+  {%- set social_img = get_url(path=page.extra.image) -%}
+{%- else -%}
+  {%- set social_img = get_url(path='img/og-default.png') -%}
+{%- endif %}
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="{{ config.title }}">
+  <meta property="og:title" content="{{ page.title }}">
+  <meta property="og:description" content="{{ social_desc }}">
+  <meta property="og:url" content="{{ page.permalink | safe }}">
+  <meta property="og:image" content="{{ social_img | safe }}">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="article:published_time" content="{{ page.date | date(format='%Y-%m-%d') }}">
+  {%- if page.taxonomies.tags is defined %}
+  {%- for tag in page.taxonomies.tags %}
+  <meta property="article:tag" content="{{ tag }}">
+  {%- endfor %}
+  {%- endif %}
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="{{ page.title }}">
+  <meta name="twitter:description" content="{{ social_desc }}">
+  <meta name="twitter:image" content="{{ social_img | safe }}">
+  <meta name="twitter:creator" content="@udayjdv">
+{% endblock social %}
+
 {% block head %}
 <link id="hl" rel="stylesheet" type="text/css" href="/giallo-{% if config.extra.force_theme == "dark" %}dark{% else %}light{% endif %}.css" />
 {% if not config.extra.force_theme %}
@@ -115,6 +156,7 @@ body.dark .theme-toggle-btn .moon-icon { display: none; }
             {% if page.updated and page.updated != page.date -%}
             <span>Updated on <span id="updated">{{ page.updated | date(format=section.extra.date_format) }}</span></span>
             {% endif -%}
+            <span id="reading-time">{{ page.reading_time }} min read</span>
           </div>
 
           {% if page.taxonomies.tags is defined %}
