@@ -10,7 +10,7 @@ insert_anchor_links = "right"
 lang = "en"
 
 title = "Work"
-subtitle = "A timeline of things I've built, broken, and learned from."
+subtitle = "Places I've made a dent."
 
 date_format = "%b %Y"
 back_to_top = true

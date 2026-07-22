@@ -23,20 +23,89 @@ body.work #wrapper {
   min-height: 100dvh;
   display: flex;
   flex-direction: column;
+  padding: 0 1.25rem;
 }
 body.work main {
   margin: 1em 0;
 }
-.timeline { position: relative; padding-left: 1.5rem; padding-right: 15px; }
-.timeline::before { content: ''; position: absolute; left: 0.375rem; top: 0.25rem; bottom: 0; width: 2px; background: var(--text-decoration-color); }
-.timeline-item { position: relative; margin-bottom: 2rem; }
-.timeline-marker { position: absolute; left: -1.5rem; top: 0.35rem; width: 0.75rem; height: 0.75rem; border-radius: 50%; background: var(--primary-color); border: 2px solid var(--bg-color); }
-.timeline-date { font-size: 0.8em; color: var(--text-pale-color); margin-bottom: 0.15rem; }
-.timeline-company { font-size: 0.9em; color: var(--text-pale-color); margin-bottom: 0.5rem; }
-.timeline-item h3 { margin: 0 0 0.15rem; font-size: 1.1em; }
-.timeline-item p { margin: 0.5rem 0; font-size: 0.9em; }
-.timeline-tags { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.5rem; }
-.timeline-tags .tag { font-size: 0.75em; color: var(--primary-color); }
+.timeline {
+  position: relative;
+}
+.timeline::before {
+  content: '';
+  position: absolute;
+  left: calc(0.5rem - 1px);
+  top: 0.55rem;
+  bottom: 0;
+  width: 2px;
+  background: var(--text-decoration-color);
+  opacity: 0.35;
+}
+.timeline-item {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2.5rem;
+  position: relative;
+}
+.timeline-item:last-child {
+  margin-bottom: 0;
+}
+
+.tl-marker {
+  position: relative;
+  width: 1rem;
+  flex-shrink: 0;
+}
+.tl-dot {
+  position: absolute;
+  left: 50%;
+  top: 1.5rem;
+  transform: translateX(-50%);
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: 50%;
+  background: var(--primary-color);
+  border: 2.5px solid var(--bg-color);
+  box-shadow: 0 0 0 1px var(--primary-pale-color);
+}
+.tl-logo {
+  flex-shrink: 0;
+  width: 2.5rem;
+  align-self: flex-start;
+  margin-top: 0.45rem;
+}
+.tl-logo img {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 0.35rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+@media (max-width: 500px) {
+  .timeline-item { gap: 0.75rem; }
+  .tl-marker { width: 0.75rem; }
+  .tl-logo { width: 2rem; }
+  .work-role { flex-direction: column; gap: 0.1rem; }
+  .work-meta { flex-direction: column; gap: 0.1rem; }
+  .work-desc ul { padding-left: 0.9rem; }
+}
+.tl-content {
+  flex: 1;
+  min-width: 0;
+}
+.work-role { display: flex; justify-content: space-between; align-items: baseline; margin: 0 0 0.15rem; font-size: 1.1em; }
+.work-role .date-range { font-size: 0.8em; color: var(--text-pale-color); font-weight: normal; white-space: nowrap; }
+.work-meta { display: flex; justify-content: space-between; font-size: 0.9em; color: var(--text-pale-color); margin-bottom: 0.75rem; }
+.work-meta a { color: var(--text-pale-color); text-decoration: none; }
+.work-meta a:hover { color: var(--primary-color); }
+.work-desc { font-size: 0.9em; line-height: 1.6; }
+.work-desc p { margin: 0.35rem 0; }
+.work-desc ul { margin: 0.35rem 0; padding-left: 1.1rem; }
+.work-desc li { margin: 0.2rem 0; padding-left: 0.3rem; }
+.work-desc li::marker { color: var(--primary-color); }
+.work-desc strong { color: var(--primary-color); }
+.stack-line { font-size: 0.9em; color: var(--text-color); margin: 0.5rem 0 0; }
+.stack-label { color: var(--primary-color); }
 </style>
 {% endblock head %}
 
@@ -48,19 +117,13 @@ body.work main {
     <div class="timeline">
       {% for page in section.pages %}
       <div class="timeline-item">
-        <div class="timeline-marker"></div>
-        <div class="timeline-content">
-          <div class="timeline-date">{{ page.extra.date_range }}</div>
-          <h3>{{ page.title }}</h3>
-          <div class="timeline-company">{{ page.extra.company }}</div>
-          <p>{{ page.content | striptags | trim }}</p>
-          {% if page.taxonomies.tags is defined %}
-          <div class="timeline-tags">
-            {% for tag in page.taxonomies.tags %}
-            <span class="tag">{{ tag }}</span>
-            {% endfor %}
-          </div>
-          {% endif %}
+        <div class="tl-marker"><div class="tl-dot"></div></div>
+        <div class="tl-logo">{% if page.extra.logo %}<img src="{{ page.extra.logo }}" alt="{{ page.extra.company }}" />{% endif %}</div>
+        <div class="tl-content">
+          <h3 class="work-role"><span>{{ page.title }}</span><span class="date-range">{{ page.extra.date_range }}</span></h3>
+          <div class="work-meta"><span>{% if page.extra.company_url %}<a href="{{ page.extra.company_url }}" target="_blank" rel="noopener">{{ page.extra.company }} ↗</a>{% else %}{{ page.extra.company }}{% endif %}</span><span>{{ page.extra.location }}</span></div>
+          <div class="work-desc">{{ page.content | trim | safe }}</div>
+          {% if page.extra.stack %}<div class="stack-line"><span class="stack-label">Stack and Tools:</span> {{ page.extra.stack }}</div>{% endif %}
         </div>
       </div>
       {% endfor %}
