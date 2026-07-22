@@ -15,23 +15,36 @@ const SITE_ORIGIN = "https://udqy.github.io";
 const BOT_RE =
   /bot|crawl|spider|slurp|bingpreview|facebookexternalhit|headless|lighthouse|monitor|preview|scrape|curl|wget|python-requests|go-http-client/i;
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": SITE_ORIGIN,
-  "Access-Control-Allow-Methods": "GET, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type",
-  "Vary": "Origin",
-};
+// `zola serve` runs on an arbitrary localhost port, so allow those too --
+// otherwise the counter is dead in local preview. The data is public and no
+// credentials are involved, so reflecting a dev origin gives nothing away.
+const DEV_ORIGIN_RE = /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/;
+
+function cors(req: Request) {
+  const origin = req.headers.get("origin");
+  const allowed = origin && (origin === SITE_ORIGIN || DEV_ORIGIN_RE.test(origin))
+    ? origin
+    : SITE_ORIGIN;
+
+  return {
+    "Access-Control-Allow-Origin": allowed,
+    "Access-Control-Allow-Methods": "GET, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type",
+    // Responses differ by origin, so caches must key on it.
+    "Vary": "Origin",
+  };
+}
 
 const supabase = createClient(
   Deno.env.get("SUPABASE_URL")!,
   Deno.env.get("SUPABASE_ANON_KEY")!,
 );
 
-const json = (body: unknown, status = 200) =>
+const json = (req: Request, body: unknown, status = 200) =>
   new Response(JSON.stringify(body), {
     status,
     headers: {
-      ...corsHeaders,
+      ...cors(req),
       "Content-Type": "application/json",
       // This request has a side effect, so it must not be replayed from cache.
       "Cache-Control": "no-store",
@@ -66,10 +79,10 @@ async function readTotal(): Promise<number | null> {
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders });
+    return new Response("ok", { headers: cors(req) });
   }
   if (req.method !== "GET") {
-    return new Response("Method not allowed", { status: 405, headers: corsHeaders });
+    return new Response("Method not allowed", { status: 405, headers: cors(req) });
   }
 
   const salt = Deno.env.get("VISITOR_SALT");
@@ -82,8 +95,8 @@ serve(async (req) => {
     if (!salt) console.error("visitors: VISITOR_SALT is not set");
     const total = await readTotal();
     return total === null
-      ? json({ error: "unavailable" }, 503)
-      : json({ visitors: total });
+      ? json(req, { error: "unavailable" }, 503)
+      : json(req, { visitors: total });
   }
 
   const { data, error } = await supabase.rpc("count_visitor", {
@@ -94,9 +107,9 @@ serve(async (req) => {
     console.error("visitors:", error.message);
     const total = await readTotal();
     return total === null
-      ? json({ error: "unavailable" }, 503)
-      : json({ visitors: total });
+      ? json(req, { error: "unavailable" }, 503)
+      : json(req, { visitors: total });
   }
 
-  return json({ visitors: data });
+  return json(req, { visitors: data });
 });
