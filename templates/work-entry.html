@@ -1,0 +1,115 @@
+{% import "macros/prose.html" as macros %}
+{% extends "_base.html" %}
+
+{# Standalone page for a single work entry. Without this, content/work/*.md has
+   no page_template and falls back to Zola's built-in "Welcome to Zola!" page. #}
+
+{% block page %}work{% endblock page %}
+{% block lang %}{% if page.extra.lang %}{{ page.extra.lang }}{% else %}{{ page.lang }}{% endif %}{% endblock lang %}
+{% block title %}{{ page.title }} · {{ page.extra.company }}{% endblock title %}
+{% block desc %}
+  <meta name="description" content="{{ page.title }} at {{ page.extra.company }}{% if page.extra.date_range %}, {{ page.extra.date_range }}{% endif %}.">
+{% endblock desc %}
+
+{% block social %}
+{%- set social_desc = page.title ~ " at " ~ page.extra.company -%}
+  <meta property="og:type" content="profile">
+  <meta property="og:site_name" content="{{ config.title }}">
+  <meta property="og:title" content="{{ page.title }} · {{ page.extra.company }}">
+  <meta property="og:description" content="{{ social_desc }}">
+  <meta property="og:url" content="{{ page.permalink | safe }}">
+  <meta property="og:image" content="{{ get_url(path='img/og-default.png') | safe }}">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="{{ page.title }} · {{ page.extra.company }}">
+  <meta name="twitter:description" content="{{ social_desc }}">
+  <meta name="twitter:image" content="{{ get_url(path='img/og-default.png') | safe }}">
+  <meta name="twitter:creator" content="@udayjdv">
+{% endblock social %}
+
+{% block head %}
+<link id="hl" rel="stylesheet" type="text/css" href="/giallo-{% if config.extra.force_theme == "dark" %}dark{% else %}light{% endif %}.css" />
+<style>
+body.work #wrapper {
+  margin: 0 auto;
+  max-width: var(--main-max-width);
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  padding: 0 1.25rem;
+}
+body.work main { margin: 1em 0; }
+
+.entry-head { display: flex; gap: 1rem; align-items: flex-start; margin: 1.5em 0 0.5em; }
+.entry-logo { flex-shrink: 0; width: 3rem; }
+.entry-logo img { width: 100%; height: auto; display: block; border-radius: 0.35rem; }
+.entry-title { margin: 0 0 0.15rem; font-size: 1.35em; }
+.entry-meta { font-size: 0.9em; color: var(--text-pale-color); display: flex; flex-wrap: wrap; gap: 0.15rem 1rem; }
+.entry-meta a { color: var(--text-pale-color); text-decoration: none; }
+.entry-meta a:hover { color: var(--primary-color); }
+
+.work-desc { font-size: 0.95em; line-height: 1.6; }
+.work-desc ul { margin: 0.35rem 0; padding-left: 1.1rem; }
+.work-desc li { margin: 0.2rem 0; padding-left: 0.3rem; }
+.work-desc li::marker { color: var(--primary-color); }
+.work-desc strong { color: var(--primary-color); }
+.stack-line { font-size: 0.9em; margin: 1.25rem 0 0; }
+.stack-label { color: var(--primary-color); }
+
+.entry-tags { display: flex; flex-wrap: wrap; gap: 0.75em; margin-top: 1.5rem; font-size: 0.85em; }
+.entry-tags a { color: var(--primary-color); text-decoration: none; }
+
+@media (max-width: 500px) {
+  .entry-head { gap: 0.75rem; }
+  .entry-logo { width: 2.25rem; }
+  .work-desc ul { padding-left: 0.9rem; }
+}
+</style>
+{% endblock head %}
+
+{% block content %}
+<div id="wrapper">
+  {{ macros::back_link(path = config.extra.work_section_path) }}
+  <main>
+    <div class="entry-head">
+      {% if page.extra.logo %}
+      <div class="entry-logo"><img src="{{ page.extra.logo }}" alt="{{ page.extra.company }}"></div>
+      {% endif %}
+      <div>
+        <h1 class="entry-title">{{ page.title }}</h1>
+        <div class="entry-meta">
+          <span>
+            {%- if page.extra.company_url -%}
+            <a href="{{ page.extra.company_url }}" target="_blank" rel="noopener">{{ page.extra.company }} ↗</a>
+            {%- else -%}
+            {{ page.extra.company }}
+            {%- endif -%}
+          </span>
+          {% if page.extra.date_range %}<span>{{ page.extra.date_range }}</span>{% endif %}
+          {% if page.extra.location %}<span>{{ page.extra.location }}</span>{% endif %}
+        </div>
+      </div>
+    </div>
+
+    <div class="work-desc">{{ page.content | safe }}</div>
+
+    {% if page.extra.stack %}
+    <p class="stack-line"><span class="stack-label">Stack and Tools:</span> {{ page.extra.stack }}</p>
+    {% endif %}
+
+    {% if page.taxonomies.tags is defined %}
+    <div class="entry-tags">
+      {% for tag in page.taxonomies.tags %}
+      <a class="instant" href="/tags/{{ tag | slugify }}">{{ tag }}</a>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    {#- _footer.html tests section.path, which page templates don't get for free. -#}
+    {% set section = get_section(path="work/_index.md", metadata_only=true) %}
+    {% include "_footer.html" %}
+  </main>
+</div>
+{% endblock content %}

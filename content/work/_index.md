@@ -3,6 +3,7 @@ title = "Work"
 description = "Things I've built and worked on."
 sort_by = "date"
 template = "work.html"
+page_template = "work-entry.html"
 
 insert_anchor_links = "right"
 
