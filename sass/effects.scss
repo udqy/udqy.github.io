@@ -46,11 +46,19 @@ body.homepage #wrapper {
   z-index: 1;
 }
 
+// Shares the closing row with the "more" link: count on the left, link on the
+// right. Baseline alignment matters because the two sit at different sizes.
+body.homepage .read-more {
+  align-items: baseline;
+}
+
 #visitor-count {
-  margin: 2.5em 0 0;
-  padding: 0 0.9375rem;
-  font-size: 0.75em;
+  // Auto right margin does the pushing, so .read-more keeps justify-content:
+  // end and the link stays right-aligned even when the count never loads.
+  margin: 0 auto 0 0;
+  font-size: 0.7em;
   color: var(--text-pale-color);
+  // Stops the line twitching sideways as digits change under it.
   font-variant-numeric: tabular-nums;
 }
 

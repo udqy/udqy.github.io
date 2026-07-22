@@ -94,17 +94,18 @@
         {% endfor %}
       </div>
       <div class="read-more">
+        {% if config.extra.visitors_endpoint %}
+        {#- Sits in the existing end-of-content row, pushed left by an auto
+            margin, so it costs no extra vertical space and 'more' stays put
+            even while the count is still hidden. -#}
+        <p id="visitor-count" hidden
+           data-endpoint="{{ config.extra.visitors_endpoint }}"
+           data-text="{{ config.extra.visitors_text }}"></p>
+        {% endif %}
         <a class="instant" href="{{ config.extra.blog_section_path }}">{{ section.extra.recent_more_text }}</a>
       </div>
     </section>
   {% endif %}
-    {% if config.extra.visitors_endpoint %}
-    {#- Stays hidden until the count actually arrives, so a failed or slow
-        request leaves no empty line behind. -#}
-    <p id="visitor-count" hidden
-       data-endpoint="{{ config.extra.visitors_endpoint }}"
-       data-text="{{ config.extra.visitors_text }}"></p>
-    {% endif %}
   </main>
   {% if section.extra.footer %}
     {% include "_footer.html" %}
