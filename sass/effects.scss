@@ -23,7 +23,8 @@ body.homepage .read-more {
 $page-gap: clamp(1.5rem, 8vw, 10rem);
 
 // Single-column pages (home, blog, work, tags, categories): pin left.
-body:not(.post):not(.theme-98) #wrapper {
+// Both retro skins (theme-98, theme-arch) keep their own centred windows.
+body:not(.post):not(.theme-98):not(.theme-arch) #wrapper {
   margin-left: $page-gap;
   margin-right: auto;
 }
@@ -32,7 +33,7 @@ body:not(.post):not(.theme-98) #wrapper {
 // Left-align the article and push the TOC to the far right. Only where that
 // layout exists — the theme collapses to a single column at <=1024px.
 @media (min-width: 1025px) {
-  body.post:not(.theme-98) {
+  body.post:not(.theme-98):not(.theme-arch) {
     #wrapper { justify-content: flex-start; }
     #blank { width: $page-gap; }
     main { margin: 0; }

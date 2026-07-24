@@ -37,6 +37,49 @@
 {% block content %}
 <div id="wrapper">
   <main>
+    {# Neofetch panel — decorative identity/system readout, shown only in Arch
+       mode (see linux.scss). Dynamic fields (cores/memory/resolution/uptime)
+       are filled by enableArchToggle in main.js. #}
+    <section id="arch-fetch" aria-hidden="true">
+<pre class="af-logo">                   -&#96;
+                  .o+&#96;
+                 &#96;ooo/
+                &#96;+oooo:
+               &#96;+oooooo:
+               -+oooooo+:
+             &#96;/:-:++oooo+:
+            &#96;/++++/+++++++:
+           &#96;/++++++++++++++:
+          &#96;/+++ooooooooooooo/&#96;
+         ./ooosssso++osssssso+&#96;
+        .oossssso-&#96;&#96;&#96;&#96;/ossssss+&#96;
+       -osssssso.      :ssssssso.
+      :osssssss/        osssso+++.
+     /ossssssss/        +ssssooo/-
+   &#96;/ossssso+/:-        -:/+osssso+-
+  &#96;+sso+:-&#96;                 &#96;.-/+oso:
+ &#96;++:.                           &#96;-/+/
+ .&#96;                                 &#96;/</pre>
+      <div class="af-info">
+        <div class="af-line"><span class="af-user">uday</span>@<span class="af-host">arch</span></div>
+        <div class="af-rule">---------------</div>
+        <div class="af-row"><span class="af-key">OS</span> Arch Linux x86_64</div>
+        <div class="af-row"><span class="af-key">Host</span> udqy.github.io</div>
+        <div class="af-row"><span class="af-key">Kernel</span> 6.x-arch1-1</div>
+        <div class="af-row"><span class="af-key">WM</span> Hyprland</div>
+        <div class="af-row"><span class="af-key">Shell</span> zsh</div>
+        <div class="af-row"><span class="af-key">Terminal</span> kitty</div>
+        <div class="af-row"><span class="af-key">Editor</span> nvim</div>
+        <div class="af-row"><span class="af-key">Resolution</span> <span id="arch-res">—</span></div>
+        <div class="af-row"><span class="af-key">CPU</span> <span id="arch-cores">—</span> cores</div>
+        <div class="af-row"><span class="af-key">Memory</span> <span id="arch-mem-total">—</span></div>
+        <div class="af-row"><span class="af-key">Uptime</span> <span id="arch-uptime">—</span></div>
+        {% if section.extra.bio %}<div class="af-tagline">{{ section.extra.bio }}</div>{% endif %}
+        <div class="af-palette">
+          <span style="background:var(--ln-bg-dark)"></span><span style="background:var(--ln-red)"></span><span style="background:var(--ln-green)"></span><span style="background:var(--ln-yellow)"></span><span style="background:var(--ln-accent)"></span><span style="background:var(--ln-magenta)"></span><span style="background:var(--ln-cyan)"></span><span style="background:var(--ln-fg)"></span>
+        </div>
+      </div>
+    </section>
     <section id="info">
       {% if section.extra.avatar %}
       <img src="/{{ section.extra.avatar }}" alt="avatar">
@@ -75,6 +118,8 @@
         {% endif %}
         {% set retro_icon = load_data(path="icon/retro.svg") %}
         <button id="retro-toggle" aria-label="Windows 98 retro mode" title="Retro mode">{{ retro_icon | safe }}</button>
+        {% set arch_icon = load_data(path="icon/arch.svg") %}
+        <button id="arch-toggle" aria-label="Arch Linux rice mode" title="Linux mode">{{ arch_icon | safe }}</button>
       </div>
     </section>
     <section id="brief" class="prose">

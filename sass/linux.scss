@@ -1,0 +1,382 @@
+/* linux.scss — Arch "rice" skin (Hyprland + Waybar)
+   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   Scoped under `body.theme-arch`, inert otherwise. Re-skins the site as a
+   tiling-WM desktop: a floating Waybar-style status bar and the content
+   #wrapper dressed as a single borderless Hyprland window over a dotted
+   desktop. Mutually exclusive with theme-98 (guard in _base.html + main.js).
+
+   The palette is a set of CSS custom properties (--ln-*) so it can be retuned
+   in one place. Scheme = Ayu Dark.
+   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+
+// Terminal-grade monospace stack — no web font shipped, so the neofetch art and
+// bar modules still align in a fixed-width grid.
+$mono: ui-monospace, "JetBrains Mono", "Fira Code", "Cascadia Code", "SFMono-Regular", Menlo, Consolas, monospace;
+
+$bar-h: 30px;
+$gap:   8px;
+
+/* Hyprland window-open flourish — scale-in with a hair of overshoot (spring). */
+@keyframes hypr-open {
+  0%   { opacity: 0; transform: scale(0.94); }
+  60%  { opacity: 1; transform: scale(1.008); }
+  100% { transform: scale(1); }
+}
+
+/* =========================================================================
+   Desktop
+   ========================================================================= */
+body.theme-arch {
+  // --- Palette tokens (Ayu Dark) ---
+  --ln-bg:      #0f1419;
+  --ln-bg-dark: #0b0e14;
+  --ln-panel:   #171d24;
+  --ln-fg:      #bfbdb6;
+  --ln-dim:     #5c6773;
+  --ln-accent:  #e6b450;
+  --ln-cyan:    #95e6cb;
+  --ln-green:   #aad94c;
+  --ln-magenta: #d2a6ff;
+  --ln-red:     #f07178;
+  --ln-orange:  #ff8f40;
+  --ln-yellow:  #ffb454;
+
+  color-scheme: dark;
+  background-color: var(--ln-bg-dark);
+  // Riced "wallpaper": a soft accent glow + faint dot grid, so the translucent
+  // windows/bar have texture to blur over.
+  background-image:
+    radial-gradient(ellipse at 50% -10%, color-mix(in srgb, var(--ln-accent) 12%, transparent), transparent 55%),
+    radial-gradient(circle, color-mix(in srgb, var(--ln-accent) 7%, transparent) 1px, transparent 1.2px);
+  background-size: auto, 24px 24px;
+  background-attachment: fixed;
+  color: var(--ln-fg);
+  font-family: $mono;
+  font-size: 14.5px;
+  line-height: 1.6;
+  height: 100dvh;
+  overflow: hidden; // the content window scrolls internally; the page never does
+
+  h1, h2, h3, h4, h5, h6, p, a, span, li, button, input, textarea,
+  code, pre, blockquote, .prose {
+    font-family: $mono;
+  }
+
+  #theme-toggle, .theme-toggle-btn { display: none !important; }
+  &.homepage #info { display: none; }
+
+  /* =======================================================================
+     Content window: #wrapper as one borderless Hyprland window
+     ======================================================================= */
+  #wrapper {
+    background: color-mix(in srgb, var(--ln-bg) 86%, transparent);
+    -webkit-backdrop-filter: blur(9px);
+    backdrop-filter: blur(9px);
+    border: 2px solid var(--ln-accent);
+    border-radius: 11px;
+    box-shadow: 0 14px 44px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(0, 0, 0, 0.4);
+    padding: 4px;
+    overflow: hidden auto; // window body scrolls internally, page stays put
+  }
+
+  // The "window open" animation only plays when you toggle INTO Linux mode
+  // (main.js adds .hypr-anim), not on every page navigation — otherwise the
+  // window bounces on each reload since this is a static multi-page site.
+  #wrapper.hypr-anim {
+    @media (prefers-reduced-motion: no-preference) {
+      animation: hypr-open 220ms cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+  }
+
+  main {
+    background: transparent;
+    min-height: 0 !important;
+    padding: 14px 18px 18px;
+  }
+
+  // Content should hug the top of the window; the theme's per-page top margins
+  // (page-head 1em, aside's 13em) otherwise push it down and it "starts in the
+  // middle". Zero the first block's top margin uniformly.
+  #wrapper > *:first-child { margin-top: 0 !important; }
+
+  &.post #wrapper { display: block; }
+  &.post #blank { display: none; }
+  // Reset the theme's 13em sidebar offset — in this single-column window the
+  // aside stacks above the article, so that margin was the big top gap.
+  &.post aside { position: static; width: 100%; margin-top: 0; padding: 4px 4px 0; }
+
+  /* =======================================================================
+     Typography & links
+     ======================================================================= */
+  h1, h2, h3, h4, h5, h6 { color: color-mix(in srgb, var(--ln-fg) 86%, #fff); line-height: 1.3; }
+  h1 { font-size: 1.7em; }
+  h2 { font-size: 1.35em; }
+  h3 { font-size: 1.15em; }
+
+  a { color: var(--ln-accent); text-decoration: none; }
+  a:hover { color: var(--ln-cyan); text-decoration: underline; }
+  .prose a, .prose a:hover, .read-more a,
+  #tags a, #post-info a { color: var(--ln-accent) !important; }
+  #post-info, #post-info .date, #reading-time { color: var(--ln-dim); }
+
+  .prose {
+    background: color-mix(in srgb, var(--ln-panel) 50%, transparent);
+    border: 1px solid color-mix(in srgb, var(--ln-accent) 14%, transparent);
+    border-radius: 8px;
+    padding: 18px 22px 22px;
+    color: var(--ln-fg);
+    // Monospace runs dense; long-form text needs air. Generous line-height and
+    // real paragraph rhythm make the post read like a document, not a log.
+    font-size: 0.94em;
+    line-height: 1.75;
+  }
+  .prose p { margin: 0 0 1.15em; }
+  .prose ul, .prose ol { margin: 1.15em 0; padding-left: 1.4em; }
+  .prose li { margin: 0.4em 0; }
+  .prose li::marker { color: var(--ln-accent); }
+  .prose h1 { margin-bottom: 0.4em; }
+  .prose h2, .prose h3, .prose h4 { margin-top: 1.8em; margin-bottom: 0.5em; }
+  .prose hr { border: 0; border-top: 1px solid color-mix(in srgb, var(--ln-accent) 18%, transparent); margin: 2em 0; }
+  .prose img { border-radius: 8px; }
+  .prose strong { color: color-mix(in srgb, var(--ln-fg) 90%, #fff); }
+  .prose em { color: var(--ln-yellow); }
+  // Inline code needs to stand apart from prose without shouting.
+  .prose :not(pre) > code {
+    background: var(--ln-bg-dark);
+    border: 1px solid color-mix(in srgb, var(--ln-accent) 16%, transparent);
+    border-radius: 5px;
+    padding: 0.1em 0.4em;
+    font-size: 0.9em;
+  }
+  blockquote, .callout {
+    background: color-mix(in srgb, var(--ln-panel) 70%, transparent);
+    border-left: 3px solid var(--ln-magenta);
+    border-radius: 0 6px 6px 0;
+    color: var(--ln-fg);
+  }
+
+  pre {
+    background: var(--ln-bg-dark);
+    border: 1px solid color-mix(in srgb, var(--ln-accent) 18%, transparent);
+    border-radius: 8px;
+    padding: 12px;
+    color: var(--ln-fg);
+  }
+  code { color: var(--ln-cyan); }
+  .codeblock { position: relative; }
+
+  /* =======================================================================
+     Controls
+     ======================================================================= */
+  button, input[type="submit"], input[type="reset"] {
+    font-family: $mono;
+    background: color-mix(in srgb, var(--ln-accent) 12%, transparent);
+    color: var(--ln-fg);
+    border: 1px solid color-mix(in srgb, var(--ln-accent) 35%, transparent);
+    border-radius: 7px;
+    padding: 4px 10px;
+    transition: background 0.12s ease, border-color 0.12s ease;
+    &:hover { background: color-mix(in srgb, var(--ln-accent) 22%, transparent); border-color: var(--ln-accent); }
+  }
+  input[type="text"], input[type="email"], input[type="search"], textarea {
+    font-family: $mono;
+    background: var(--ln-bg-dark);
+    color: var(--ln-fg);
+    border: 1px solid color-mix(in srgb, var(--ln-accent) 30%, transparent);
+    border-radius: 7px;
+    padding: 4px 8px;
+  }
+
+  #links #right button, #arch-toggle, #retro-toggle {
+    background: none;
+    border: 0;
+    color: var(--ln-fg);
+    padding: 4px;
+    &:hover { background: none; color: var(--ln-cyan); }
+  }
+  #links a { color: var(--ln-fg); }
+  #links a:hover { color: var(--ln-cyan); }
+
+  .post-list .post {
+    border-radius: 7px;
+    padding: 6px 10px;
+    span, .date { color: var(--ln-fg); }
+    .date { color: var(--ln-dim); }
+    &:hover { background: color-mix(in srgb, var(--ln-accent) 14%, transparent); }
+    &:hover span, &:hover .date { color: var(--ln-cyan); }
+    &.featured { font-weight: 700; }
+  }
+  h2.category { color: var(--ln-magenta); }
+
+  #back-to-top {
+    background: color-mix(in srgb, var(--ln-accent) 14%, transparent);
+    border: 1px solid color-mix(in srgb, var(--ln-accent) 35%, transparent);
+    border-radius: 8px;
+    &:hover { background: color-mix(in srgb, var(--ln-accent) 24%, transparent); }
+  }
+
+  * { scrollbar-width: thin; scrollbar-color: var(--ln-accent) var(--ln-bg-dark); }
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-track { background: var(--ln-bg-dark); }
+  ::-webkit-scrollbar-thumb { background: color-mix(in srgb, var(--ln-accent) 55%, transparent); border-radius: 6px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--ln-accent); }
+
+  ::selection { background: color-mix(in srgb, var(--ln-accent) 35%, transparent); color: #fff; }
+}
+
+/* A single full-width, full-height "maximised" window with its own scroll:
+   fixed-positioned so the page itself never scrolls under the top bar, spanning
+   the desktop between the gaps. Also beats the `body.work #wrapper` inline
+   <style> (same trick as retro). */
+html body.theme-arch #wrapper {
+  position: fixed;
+  top: $bar-h + $gap * 2;
+  left: $gap;
+  right: $gap;
+  bottom: $gap;
+  width: auto;
+  max-width: none;
+  min-height: 0;
+  margin: 0;
+  display: block;
+}
+
+/* The window itself stays full-width (chrome), but its content lives in one
+   shared, centred reading column so every top-level block — page-head, section
+   title, main, footer, a post's TOC aside — lines up instead of some spanning
+   full-width and others not. Higher specificity than the per-page rules
+   (e.g. `body.work main`) so it wins everywhere. */
+html body.theme-arch #wrapper > * {
+  width: 100%;
+  max-width: 52rem;
+  margin-inline: auto;
+  padding-inline: 18px;
+  box-sizing: border-box;
+}
+
+/* =========================================================================
+   Neofetch panel (markup in home.html, homepage-only)
+   ========================================================================= */
+#arch-fetch { display: none; }
+
+body.theme-arch.homepage #arch-fetch {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  flex-wrap: wrap;
+  padding: 8px 6px 18px;
+  margin-bottom: 8px;
+  border-bottom: 1px solid color-mix(in srgb, var(--ln-accent) 14%, transparent);
+
+  .af-logo {
+    color: var(--ln-accent);
+    font-size: 10px;
+    line-height: 1.05;
+    margin: 0;
+    background: none;
+    border: 0;
+    padding: 0;
+    white-space: pre;
+    text-shadow: 0 0 12px color-mix(in srgb, var(--ln-accent) 40%, transparent);
+  }
+  .af-info { font-size: 13px; line-height: 1.55; min-width: 220px; }
+  .af-line { color: var(--ln-green); font-weight: 700; }
+  .af-rule { color: var(--ln-dim); }
+  .af-row { color: var(--ln-fg); }
+  .af-row .af-key { color: var(--ln-accent); font-weight: 700; display: inline-block; min-width: 68px; }
+  .af-tagline { color: var(--ln-yellow); margin-top: 8px; max-width: 44ch; }
+  .af-palette { margin-top: 10px; display: flex; gap: 0; }
+  .af-palette span { width: 15px; height: 15px; display: inline-block; }
+
+  @media (max-width: 560px) {
+    .af-logo { display: none; }
+  }
+}
+
+/* =========================================================================
+   Waybar-style status bar (markup in _linux.html; on every page)
+   ========================================================================= */
+#arch-bar { display: none; }
+
+body.theme-arch #arch-bar {
+  position: fixed;
+  top: $gap;
+  left: $gap;
+  right: $gap;
+  height: $bar-h;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 0 8px;
+  background: color-mix(in srgb, var(--ln-bg-dark) 82%, transparent);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  border: 1px solid color-mix(in srgb, var(--ln-accent) 22%, transparent);
+  border-radius: 9px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+  font-family: $mono;
+  font-size: 12.5px;
+  color: var(--ln-fg);
+  user-select: none;
+
+  .bar-left, .bar-right { display: flex; align-items: center; gap: 6px; }
+  .bar-center {
+    flex: 1;
+    text-align: center;
+    color: var(--ln-dim);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .bar-arch {
+    display: grid;
+    place-items: center;
+    width: 26px; height: 22px;
+    padding: 0;
+    background: none;
+    border: 0;
+    border-radius: 6px;
+    color: var(--ln-accent);
+    cursor: pointer;
+    &:hover { background: color-mix(in srgb, var(--ln-accent) 18%, transparent); color: var(--ln-cyan); }
+    svg { width: 16px; height: 16px; }
+  }
+
+  .bar-ws { display: flex; align-items: center; gap: 3px; }
+  .ws {
+    display: grid;
+    place-items: center;
+    min-width: 22px; height: 22px;
+    padding: 0 6px;
+    border-radius: 6px;
+    color: var(--ln-dim);
+    text-decoration: none;
+    cursor: pointer;
+    &:hover { color: var(--ln-fg); background: color-mix(in srgb, var(--ln-accent) 12%, transparent); }
+    &.active { color: var(--ln-bg-dark); background: var(--ln-accent); font-weight: 700; }
+  }
+
+  .bar-mod {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    height: 22px;
+    padding: 0 8px;
+    border-radius: 6px;
+    background: color-mix(in srgb, var(--ln-accent) 8%, transparent);
+    white-space: nowrap;
+  }
+  .bar-mod .mod-label { color: var(--ln-dim); }
+  .mod-cpu   .mod-val { color: var(--ln-green); }
+  .mod-mem   .mod-val { color: var(--ln-magenta); }
+  .mod-clock { background: color-mix(in srgb, var(--ln-accent) 16%, transparent); }
+  .mod-clock .mod-val { color: var(--ln-cyan); font-weight: 700; }
+
+  @media (max-width: 620px) {
+    .bar-center, .mod-cpu, .mod-mem { display: none; }
+  }
+}
+

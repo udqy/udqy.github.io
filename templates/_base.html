@@ -37,6 +37,7 @@
   <link rel="stylesheet" href="/main.css">
   <link rel="stylesheet" href="/effects.css">
   <link rel="stylesheet" href="/retro.css">
+  <link rel="stylesheet" href="/linux.css">
   {% block head %}{% endblock head %}
   {% include "_head_extend.html" %}
 </head>
@@ -52,13 +53,18 @@
     }
   </script>
   {% endif %}
-  {# Retro mode persists across sessions (localStorage), applied before paint to avoid a flash. #}
+  {# Retro / rice modes persist across sessions (localStorage), applied before
+     paint to avoid a flash. They're mutually exclusive: if storage somehow has
+     both on, Arch wins and only one body class is ever set. #}
   <script>
-    if (localStorage.getItem('theme-98') === 'on') document.body.classList.add('theme-98');
+    if (localStorage.getItem('theme-arch') === 'on') document.body.classList.add('theme-arch');
+    else if (localStorage.getItem('theme-98') === 'on') document.body.classList.add('theme-98');
   </script>
   {% block content %}{% endblock content %}
-  {# Retro entry lives on the homepage (see home.html). Taskbar is the in-retro chrome. #}
+  {# Retro/rice entry buttons live on the homepage (see home.html). These are the
+     in-mode chrome: Win98 taskbar and the Arch status bar. #}
   {% include "_taskbar.html" %}
+  {% include "_linux.html" %}
   {% block script %}{% endblock script %}
   <script src="/js/main.js"></script>
   <script src="/js/minesweeper.js" defer></script>

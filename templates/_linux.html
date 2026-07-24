@@ -1,0 +1,22 @@
+{# Arch "rice" chrome — a Waybar-style status bar. In the DOM on every page but
+   hidden by CSS unless `body.theme-arch` is active. Workspaces map to the site
+   sections; modules, clock and the active-workspace marker are wired in JS
+   (enableArchToggle). The Arch button on the left exits Linux mode. #}
+<div id="arch-bar" role="navigation" aria-label="status bar" aria-hidden="true">
+  <div class="bar-left">
+    {% set arch_icon = load_data(path="icon/arch.svg") %}
+    <button type="button" class="bar-arch" id="arch-power" title="Exit Linux mode" aria-label="Exit Linux mode">{{ arch_icon | safe }}</button>
+    <div class="bar-ws" id="arch-ws">
+      <a class="ws" href="/" data-page="homepage" title="Home">1</a>
+      {% for item in config.extra.sections %}
+      <a class="ws" href="{{ item.path }}" data-page="{{ item.name | lower }}"{% if item.is_external %} target="_blank" rel="noreferrer noopener"{% endif %} title="{{ item.name }}">{{ loop.index + 1 }}</a>
+      {% endfor %}
+    </div>
+  </div>
+  <div class="bar-center"><span id="arch-window-title"></span></div>
+  <div class="bar-right">
+    <span class="bar-mod mod-cpu"><span class="mod-label">CPU</span><span class="mod-val" id="arch-cpu">--%</span></span>
+    <span class="bar-mod mod-mem"><span class="mod-label">MEM</span><span class="mod-val" id="arch-mem">--</span></span>
+    <span class="bar-mod mod-clock"><span class="mod-val" id="arch-clock">--:--</span></span>
+  </div>
+</div>

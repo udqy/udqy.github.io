@@ -13,6 +13,9 @@ $gray:   #808080;
 $dark:   #0a0a0a;
 $light:  #dfdfdf;
 $navy:   #000080;
+// Royal blue of the Windows 98 wallpaper — used as the desktop backdrop and as
+// the solid fallback so there's no color flash before the JPG paints.
+$desktop: #354091;
 
 // Raised control (buttons, taskbar buttons)
 @mixin raised {
@@ -65,7 +68,9 @@ $navy:   #000080;
    Desktop
    ========================================================================= */
 body.theme-98 {
-  background: $teal;
+  // The classic "flying flag" wallpaper, centred and fixed so it stays put as
+  // the window scrolls. Falls back to its own royal blue while the JPG loads.
+  background: $desktop url("/img/win98-wallpaper.jpg") center center / cover no-repeat fixed;
   color: #222;
   font-family: "Pixelated MS Sans Serif", Arial, sans-serif;
   -webkit-font-smoothing: none;

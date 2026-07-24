@@ -368,6 +368,13 @@ function enableRetroToggle() {
     body.classList.toggle('theme-98', on);
     localStorage.setItem('theme-98', on ? 'on' : 'off');
     if (floatBtn) floatBtn.setAttribute('aria-pressed', String(on));
+    // Mutually exclusive with Arch mode — turning retro on evicts the rice skin.
+    if (on) {
+      body.classList.remove('theme-arch');
+      localStorage.setItem('theme-arch', 'off');
+      const archBtn = document.querySelector('#arch-toggle');
+      if (archBtn) archBtn.setAttribute('aria-pressed', 'false');
+    }
     // Always drop any drag offset so the window recentres and the inline
     // transform never leaks into the normal (non-retro) layout.
     dragX = 0; dragY = 0;
@@ -418,6 +425,107 @@ function enableRetroToggle() {
   }
 }
 
+function enableArchToggle() {
+  const body = document.body;
+  const bar = document.querySelector('#arch-bar');
+  const toggleBtn = document.querySelector('#arch-toggle');
+  const powerBtn = document.querySelector('#arch-power');
+  if (!bar && !toggleBtn) return;
+
+  function setArch(on) {
+    body.classList.toggle('theme-arch', on);
+    localStorage.setItem('theme-arch', on ? 'on' : 'off');
+    if (toggleBtn) toggleBtn.setAttribute('aria-pressed', String(on));
+    // Mutually exclusive with Win98 — turning the rice on evicts retro mode.
+    if (on) {
+      body.classList.remove('theme-98');
+      localStorage.setItem('theme-98', 'off');
+      const retroBtn = document.querySelector('#retro-toggle');
+      if (retroBtn) retroBtn.setAttribute('aria-pressed', 'false');
+      // Play the "window open" animation only on this deliberate toggle, not on
+      // page navigations (the pre-paint guard never adds this class on reload).
+      const wrapper = document.querySelector('#wrapper');
+      if (wrapper) {
+        wrapper.classList.add('hypr-anim');
+        wrapper.addEventListener('animationend', () => wrapper.classList.remove('hypr-anim'), { once: true });
+      }
+    }
+  }
+
+  if (toggleBtn) {
+    toggleBtn.setAttribute('aria-pressed', String(body.classList.contains('theme-arch')));
+    toggleBtn.addEventListener('click', () => setArch(!body.classList.contains('theme-arch')));
+  }
+  if (powerBtn) powerBtn.addEventListener('click', () => setArch(false));
+
+  // Focused-window title in the bar centre = the page title.
+  const titleEl = document.querySelector('#arch-window-title');
+  if (titleEl) titleEl.textContent = (document.title || 'uday@arch').trim();
+
+  // Highlight the workspace for the current page (posts live under /blog).
+  const path = location.pathname;
+  document.querySelectorAll('#arch-ws .ws').forEach(ws => {
+    const href = ws.getAttribute('href');
+    const match = href === '/' ? (path === '/' || path === '') : path.startsWith(href);
+    ws.classList.toggle('active', match);
+  });
+
+  // Neofetch dynamic fields (homepage only). Real values where the browser
+  // exposes them; CPU load isn't available anywhere, so the bar fakes that.
+  const setText = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+  const cores = navigator.hardwareConcurrency || 8;
+  const memGB = navigator.deviceMemory || 8;
+  setText('arch-res', `${screen.width}x${screen.height}`);
+  setText('arch-cores', String(cores));
+  setText('arch-mem-total', `${memGB} GiB`);
+
+  // Live "uptime" — honest session time since the page loaded.
+  const fmtUptime = (s) => {
+    const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), sec = Math.floor(s % 60);
+    if (h) return `${h}h ${m}m`;
+    if (m) return `${m}m ${sec}s`;
+    return `${sec}s`;
+  };
+  const t0 = performance.now();
+  const tickUptime = () => setText('arch-uptime', fmtUptime((performance.now() - t0) / 1000));
+  tickUptime();
+  setInterval(tickUptime, 1000);
+
+  // Bar clock.
+  const clock = document.getElementById('arch-clock');
+  if (clock) {
+    const tick = () => {
+      const d = new Date();
+      clock.textContent = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+    };
+    tick();
+    setInterval(tick, 10000);
+  }
+
+  // Fake-but-plausible CPU load (unreadable in a browser) — a gentle random walk.
+  const cpuEl = document.getElementById('arch-cpu');
+  if (cpuEl) {
+    let cpu = 12;
+    setInterval(() => {
+      cpu = Math.max(2, Math.min(78, cpu + (Math.random() * 18 - 9)));
+      cpuEl.textContent = `${Math.round(cpu)}%`;
+    }, 1800);
+    cpuEl.textContent = `${cpu}%`;
+  }
+
+  // Memory module: real total, plausible fluctuating "used".
+  const memEl = document.getElementById('arch-mem');
+  if (memEl) {
+    const upd = () => {
+      const used = (memGB * (0.35 + Math.random() * 0.3)).toFixed(1);
+      memEl.textContent = `${used}/${memGB}G`;
+    };
+    upd();
+    setInterval(upd, 3200);
+  }
+
+}
+
 function enableVisitorCount() {
   const el = document.querySelector('#visitor-count');
   if (!el) return;
@@ -434,6 +542,7 @@ function enableVisitorCount() {
 }
 
 enableRetroToggle();
+enableArchToggle();
 enableVisitorCount();
 enablePrerender();
 enableRssMask();
