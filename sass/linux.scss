@@ -16,11 +16,13 @@ $mono: ui-monospace, "JetBrains Mono", "Fira Code", "Cascadia Code", "SFMono-Reg
 $bar-h: 30px;
 $gap:   8px;
 
-/* Hyprland window-open flourish — scale-in with a hair of overshoot (spring). */
+/* Hyprland window-open flourish — a compositor-style pop: fade + blur-in while
+   scaling up from small, with a spring overshoot on the settle. The blur is what
+   sells the "just composited" feel; the overshoot lives in the timing bezier. */
 @keyframes hypr-open {
-  0%   { opacity: 0; transform: scale(0.94); }
-  60%  { opacity: 1; transform: scale(1.008); }
-  100% { transform: scale(1); }
+  0%   { opacity: 0; transform: scale(0.90); filter: blur(7px); }
+  55%  { opacity: 1; filter: blur(0); }
+  100% { opacity: 1; transform: scale(1); filter: blur(0); }
 }
 
 /* =========================================================================
@@ -43,12 +45,11 @@ body.theme-arch {
 
   color-scheme: dark;
   background-color: var(--ln-bg-dark);
-  // Riced "wallpaper": a soft accent glow + faint dot grid, so the translucent
-  // windows/bar have texture to blur over.
+  // Calm "wallpaper": one soft amber glow up top and a gentle vignette for depth.
+  // No busy dot grid — the discipline is the point.
   background-image:
-    radial-gradient(ellipse at 50% -10%, color-mix(in srgb, var(--ln-accent) 12%, transparent), transparent 55%),
-    radial-gradient(circle, color-mix(in srgb, var(--ln-accent) 7%, transparent) 1px, transparent 1.2px);
-  background-size: auto, 24px 24px;
+    radial-gradient(130% 90% at 50% -25%, color-mix(in srgb, var(--ln-accent) 9%, transparent), transparent 58%),
+    radial-gradient(120% 120% at 50% 118%, rgba(0, 0, 0, 0.55), transparent 55%);
   background-attachment: fixed;
   color: var(--ln-fg);
   font-family: $mono;
@@ -69,12 +70,17 @@ body.theme-arch {
      Content window: #wrapper as one borderless Hyprland window
      ======================================================================= */
   #wrapper {
-    background: color-mix(in srgb, var(--ln-bg) 86%, transparent);
-    -webkit-backdrop-filter: blur(9px);
-    backdrop-filter: blur(9px);
-    border: 2px solid var(--ln-accent);
-    border-radius: 11px;
-    box-shadow: 0 14px 44px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(0, 0, 0, 0.4);
+    background: color-mix(in srgb, var(--ln-bg) 82%, transparent);
+    -webkit-backdrop-filter: blur(13px) saturate(1.1);
+    backdrop-filter: blur(13px) saturate(1.1);
+    // Hairline neutral edge + layered soft shadow + a faint inner top highlight.
+    // Depth carries the "floating window", not a loud coloured border.
+    border: 1px solid color-mix(in srgb, var(--ln-fg) 11%, transparent);
+    border-radius: 14px;
+    box-shadow:
+      0 24px 70px -22px rgba(0, 0, 0, 0.78),
+      0 3px 12px rgba(0, 0, 0, 0.4),
+      inset 0 1px 0 rgba(255, 255, 255, 0.045);
     padding: 4px;
     overflow: hidden auto; // window body scrolls internally, page stays put
   }
@@ -84,7 +90,11 @@ body.theme-arch {
   // window bounces on each reload since this is a static multi-page site.
   #wrapper.hypr-anim {
     @media (prefers-reduced-motion: no-preference) {
-      animation: hypr-open 220ms cubic-bezier(0.22, 1, 0.36, 1) both;
+      // Bezier overshoots slightly past 1 (third control point > 1) for a spring
+      // settle — the signature Hyprland "overshot" window-open easing.
+      animation: hypr-open 300ms cubic-bezier(0.2, 1.16, 0.32, 1) both;
+      transform-origin: center 42%;
+      will-change: transform, filter, opacity;
     }
   }
 
@@ -105,6 +115,54 @@ body.theme-arch {
   // aside stacks above the article, so that margin was the big top gap.
   &.post aside { position: static; width: 100%; margin-top: 0; padding: 4px 4px 0; }
 
+  /* Single post header: kicker → display title → meta row (date · reading time,
+     tag pills) → hairline divider, so the article opens like a document, not a
+     dumped block. The body below inherits the shared .prose reading styles. */
+  &.post {
+    .post-kicker {
+      color: var(--ln-accent);
+      font-size: 0.8em;
+      letter-spacing: 0.06em;
+      margin-bottom: 12px;
+    }
+    article.prose > h1 {
+      font-size: 2em;
+      line-height: 1.16;
+      letter-spacing: -0.01em;
+      margin: 0 0 14px;
+      color: color-mix(in srgb, var(--ln-fg) 92%, #fff);
+    }
+    #post-info {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px 14px;
+      margin: 0 0 22px;
+      padding-bottom: 18px;
+      border-bottom: 1px solid color-mix(in srgb, var(--ln-fg) 9%, transparent);
+    }
+    #date {
+      display: inline-flex;
+      align-items: center;
+      gap: 13px;
+      color: color-mix(in srgb, var(--ln-fg) 52%, transparent);
+      font-size: 0.85em;
+    }
+    #reading-time { position: relative; padding-left: 15px; }
+    #reading-time::before { content: "·"; position: absolute; left: 2px; }
+    #tags { display: inline-flex; flex-wrap: wrap; gap: 6px; margin-left: auto; }
+    #tags a {
+      font-size: 0.74em;
+      color: var(--ln-accent) !important;
+      background: color-mix(in srgb, var(--ln-accent) 12%, transparent);
+      border: 1px solid color-mix(in srgb, var(--ln-accent) 22%, transparent);
+      border-radius: 999px;
+      padding: 2px 9px;
+      text-decoration: none !important;
+    }
+    #tags a:hover { background: color-mix(in srgb, var(--ln-accent) 22%, transparent); border-color: var(--ln-accent); }
+  }
+
   /* =======================================================================
      Typography & links
      ======================================================================= */
@@ -114,7 +172,7 @@ body.theme-arch {
   h3 { font-size: 1.15em; }
 
   a { color: var(--ln-accent); text-decoration: none; }
-  a:hover { color: var(--ln-cyan); text-decoration: underline; }
+  a:hover { color: color-mix(in srgb, var(--ln-accent) 78%, #fff); text-decoration: underline; }
   .prose a, .prose a:hover, .read-more a,
   #tags a, #post-info a { color: var(--ln-accent) !important; }
   #post-info, #post-info .date, #reading-time { color: var(--ln-dim); }
@@ -131,6 +189,8 @@ body.theme-arch {
     line-height: 1.75;
   }
   .prose p { margin: 0 0 1.15em; }
+  // Homepage intro box: even breathing room on all four sides.
+  &.homepage #brief.prose { padding: 28px; }
   .prose ul, .prose ol { margin: 1.15em 0; padding-left: 1.4em; }
   .prose li { margin: 0.4em 0; }
   .prose li::marker { color: var(--ln-accent); }
@@ -139,7 +199,7 @@ body.theme-arch {
   .prose hr { border: 0; border-top: 1px solid color-mix(in srgb, var(--ln-accent) 18%, transparent); margin: 2em 0; }
   .prose img { border-radius: 8px; }
   .prose strong { color: color-mix(in srgb, var(--ln-fg) 90%, #fff); }
-  .prose em { color: var(--ln-yellow); }
+  .prose em { color: var(--ln-fg); font-style: italic; }
   // Inline code needs to stand apart from prose without shouting.
   .prose :not(pre) > code {
     background: var(--ln-bg-dark);
@@ -150,7 +210,7 @@ body.theme-arch {
   }
   blockquote, .callout {
     background: color-mix(in srgb, var(--ln-panel) 70%, transparent);
-    border-left: 3px solid var(--ln-magenta);
+    border-left: 3px solid color-mix(in srgb, var(--ln-accent) 55%, transparent);
     border-radius: 0 6px 6px 0;
     color: var(--ln-fg);
   }
@@ -162,7 +222,7 @@ body.theme-arch {
     padding: 12px;
     color: var(--ln-fg);
   }
-  code { color: var(--ln-cyan); }
+  code { color: color-mix(in srgb, var(--ln-accent) 60%, var(--ln-fg)); }
   .codeblock { position: relative; }
 
   /* =======================================================================
@@ -187,26 +247,100 @@ body.theme-arch {
     padding: 4px 8px;
   }
 
-  #links #right button, #arch-toggle, #retro-toggle {
+  #links #right button, #arch-toggle {
+    // inline-flex + line-height:0 kills the button baseline gap so the arch mark
+    // sits on the same line as the social icons instead of dropping below it.
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    vertical-align: middle;
+    line-height: 0;
     background: none;
     border: 0;
     color: var(--ln-fg);
     padding: 4px;
-    &:hover { background: none; color: var(--ln-cyan); }
+    &:hover { background: none; color: var(--ln-accent); }
+    svg { display: block; vertical-align: middle; }
   }
   #links a { color: var(--ln-fg); }
-  #links a:hover { color: var(--ln-cyan); }
+  #links a:hover { color: var(--ln-accent); }
+  #links #right a { display: inline-flex; align-items: center; }
+  // The theme underlines the Blog/Work links in its red primary — bring it onto
+  // the amber palette.
+  #links #left a { border-bottom-color: color-mix(in srgb, var(--ln-accent) 45%, transparent); }
+  #links #left a:hover { border-bottom-color: var(--ln-accent); }
 
   .post-list .post {
     border-radius: 7px;
     padding: 6px 10px;
     span, .date { color: var(--ln-fg); }
     .date { color: var(--ln-dim); }
-    &:hover { background: color-mix(in srgb, var(--ln-accent) 14%, transparent); }
-    &:hover span, &:hover .date { color: var(--ln-cyan); }
+    &:hover { background: color-mix(in srgb, var(--ln-accent) 12%, transparent); }
+    &:hover span, &:hover .date { color: color-mix(in srgb, var(--ln-accent) 75%, #fff); }
     &.featured { font-weight: 700; }
   }
-  h2.category { color: var(--ln-magenta); }
+  h2.category { color: color-mix(in srgb, var(--ln-fg) 55%, transparent); letter-spacing: 0.04em; text-transform: uppercase; font-size: 0.9em; }
+
+  // Terminal-style prompt on every section header (blog, work, and any new
+  // section you add) — a cohesive, site-wide touch, not a blog-only one.
+  .section-title h1::before { content: "❯ "; color: var(--ln-accent); font-weight: 400; }
+
+  /* Rich "app window" post cards. Keyed off the card markup (.post-title) rather
+     than the blog route, so ANY listing built like the blog — including new
+     sections you create later — inherits these cards automatically. The homepage
+     Recents uses bare spans (no .post-title) and stays compact. */
+  .post-list:has(.post-title) {
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+
+    .post {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      grid-template-areas:
+        "title date"
+        "desc  desc"
+        "meta  meta";
+      align-items: baseline;
+      gap: 2px 12px;
+      padding: 14px 16px;
+      border: 1px solid color-mix(in srgb, var(--ln-fg) 9%, transparent);
+      border-left: 2px solid color-mix(in srgb, var(--ln-accent) 38%, transparent);
+      border-radius: 9px;
+      background: color-mix(in srgb, var(--ln-panel) 42%, transparent);
+      transition: background .16s ease, border-color .16s ease, transform .16s ease;
+
+      .post-title { grid-area: title; font-size: 1.06em; font-weight: 600; color: var(--ln-fg); }
+      .date { grid-area: date; text-align: right; color: var(--ln-dim); font-size: 0.82em; white-space: nowrap; }
+      .post-desc { grid-area: desc; margin-top: 4px; color: var(--ln-dim); font-size: 0.9em; line-height: 1.55; }
+      .post-meta { grid-area: meta; display: flex; align-items: center; flex-wrap: wrap; gap: 6px 10px; margin-top: 9px; }
+      .post-rt { color: color-mix(in srgb, var(--ln-fg) 55%, transparent); font-size: 0.78em; letter-spacing: 0.02em; }
+      .post-tags { display: inline-flex; flex-wrap: wrap; gap: 6px; }
+      .tag {
+        font-size: 0.74em;
+        color: var(--ln-accent);
+        background: color-mix(in srgb, var(--ln-accent) 12%, transparent);
+        border: 1px solid color-mix(in srgb, var(--ln-accent) 22%, transparent);
+        border-radius: 999px;
+        padding: 1px 8px;
+      }
+
+      &:hover {
+        background: color-mix(in srgb, var(--ln-accent) 9%, transparent);
+        border-color: color-mix(in srgb, var(--ln-accent) 26%, transparent);
+        border-left-color: var(--ln-accent);
+        transform: translateX(3px);
+      }
+      &:hover .post-title { color: color-mix(in srgb, var(--ln-accent) 78%, #fff); }
+      &:hover .date { color: var(--ln-fg); }
+
+      &.featured {
+        border-left-color: var(--ln-accent);
+        .post-title::after { content: " ★"; color: var(--ln-accent); font-size: 0.8em; }
+      }
+    }
+  }
 
   #back-to-top {
     background: color-mix(in srgb, var(--ln-accent) 14%, transparent);
@@ -269,24 +403,27 @@ body.theme-arch.homepage #arch-fetch {
   border-bottom: 1px solid color-mix(in srgb, var(--ln-accent) 14%, transparent);
 
   .af-logo {
-    color: var(--ln-accent);
-    font-size: 10px;
-    line-height: 1.05;
+    /* Amber-duotone circular avatar; per-glyph tints live in the fragment. Font
+       size caps the rendered footprint while keeping the full detail. */
+    font-size: 7px;
+    line-height: 1.02;
     margin: 0;
     background: none;
     border: 0;
     padding: 0;
     white-space: pre;
-    text-shadow: 0 0 12px color-mix(in srgb, var(--ln-accent) 40%, transparent);
+    letter-spacing: 0;
+    flex: 0 0 auto;
   }
-  .af-info { font-size: 13px; line-height: 1.55; min-width: 220px; }
-  .af-line { color: var(--ln-green); font-weight: 700; }
-  .af-rule { color: var(--ln-dim); }
+  .af-info { font-size: 13px; line-height: 1.6; min-width: 220px; }
+  .af-line { color: var(--ln-accent); font-weight: 700; letter-spacing: 0.02em; }
+  .af-rule { color: color-mix(in srgb, var(--ln-fg) 22%, transparent); }
   .af-row { color: var(--ln-fg); }
-  .af-row .af-key { color: var(--ln-accent); font-weight: 700; display: inline-block; min-width: 68px; }
-  .af-tagline { color: var(--ln-yellow); margin-top: 8px; max-width: 44ch; }
-  .af-palette { margin-top: 10px; display: flex; gap: 0; }
-  .af-palette span { width: 15px; height: 15px; display: inline-block; }
+  .af-row .af-key { color: color-mix(in srgb, var(--ln-fg) 45%, transparent); font-weight: 500; display: inline-block; min-width: 84px; letter-spacing: 0.03em; }
+  .af-tagline { color: color-mix(in srgb, var(--ln-fg) 62%, transparent); margin-top: 12px; max-width: 44ch; font-style: italic; }
+  // A single accent ramp instead of a rainbow swatch row — on-palette by design.
+  .af-palette { margin-top: 14px; display: flex; gap: 0; border-radius: 4px; overflow: hidden; width: fit-content; }
+  .af-palette span { width: 16px; height: 6px; display: inline-block; }
 
   @media (max-width: 560px) {
     .af-logo { display: none; }
@@ -310,12 +447,12 @@ body.theme-arch #arch-bar {
   justify-content: space-between;
   gap: 8px;
   padding: 0 8px;
-  background: color-mix(in srgb, var(--ln-bg-dark) 82%, transparent);
-  -webkit-backdrop-filter: blur(10px);
-  backdrop-filter: blur(10px);
-  border: 1px solid color-mix(in srgb, var(--ln-accent) 22%, transparent);
-  border-radius: 9px;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+  background: color-mix(in srgb, var(--ln-bg-dark) 78%, transparent);
+  -webkit-backdrop-filter: blur(12px) saturate(1.1);
+  backdrop-filter: blur(12px) saturate(1.1);
+  border: 1px solid color-mix(in srgb, var(--ln-fg) 10%, transparent);
+  border-radius: 10px;
+  box-shadow: 0 8px 24px -6px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.04);
   font-family: $mono;
   font-size: 12.5px;
   color: var(--ln-fg);
@@ -341,7 +478,7 @@ body.theme-arch #arch-bar {
     border-radius: 6px;
     color: var(--ln-accent);
     cursor: pointer;
-    &:hover { background: color-mix(in srgb, var(--ln-accent) 18%, transparent); color: var(--ln-cyan); }
+    &:hover { background: color-mix(in srgb, var(--ln-accent) 16%, transparent); color: color-mix(in srgb, var(--ln-accent) 75%, #fff); }
     svg { width: 16px; height: 16px; }
   }
 
@@ -362,21 +499,22 @@ body.theme-arch #arch-bar {
   .bar-mod {
     display: inline-flex;
     align-items: center;
-    gap: 5px;
+    gap: 6px;
     height: 22px;
-    padding: 0 8px;
+    padding: 0 9px;
     border-radius: 6px;
-    background: color-mix(in srgb, var(--ln-accent) 8%, transparent);
+    background: color-mix(in srgb, var(--ln-fg) 6%, transparent);
     white-space: nowrap;
   }
-  .bar-mod .mod-label { color: var(--ln-dim); }
-  .mod-cpu   .mod-val { color: var(--ln-green); }
-  .mod-mem   .mod-val { color: var(--ln-magenta); }
-  .mod-clock { background: color-mix(in srgb, var(--ln-accent) 16%, transparent); }
-  .mod-clock .mod-val { color: var(--ln-cyan); font-weight: 700; }
+  // One disciplined palette: labels are muted, values read in the foreground,
+  // and amber is reserved for the clock — the single anchor in the bar.
+  .bar-mod .mod-label { color: color-mix(in srgb, var(--ln-fg) 42%, transparent); letter-spacing: 0.03em; }
+  .bar-mod .mod-val { color: var(--ln-fg); font-weight: 600; }
+  .mod-clock { background: color-mix(in srgb, var(--ln-accent) 14%, transparent); }
+  .mod-clock .mod-val { color: var(--ln-accent); font-weight: 700; }
 
   @media (max-width: 620px) {
-    .bar-center, .mod-cpu, .mod-mem { display: none; }
+    .bar-center, .mod-read, .mod-mem { display: none; }
   }
 }
 

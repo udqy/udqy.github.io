@@ -69,3 +69,14 @@ body.dark .theme-toggle-btn {
   .sun-icon { display: inline; }
   .moon-icon { display: none; }
 }
+
+// The blog list carries a description, reading time and tags for the rice-mode
+// card layout (see linux.scss). The default theme keeps its minimal title+date
+// row, so those extras are hidden unless Arch mode is on.
+body:not(.theme-arch) .post-list .post-desc,
+body:not(.theme-arch) .post-list .post-meta {
+  display: none;
+}
+
+// The post kicker (❯ section) is an Arch-mode editorial touch; hide it elsewhere.
+body:not(.theme-arch) .post-kicker { display: none; }

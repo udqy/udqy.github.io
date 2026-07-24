@@ -38,8 +38,13 @@
     <div class="post-list categorized">
       {% for post in posts %}
       <a class="post instant {% if post.extra.featured %}featured{% endif %}" href="{{ post.path }}">
-        <span>{{ post.title }}</span>
+        <span class="post-title">{{ post.title }}</span>
         <span class="date">{{ post.date | date(format=section.extra.date_format) }}</span>
+        {% if post.description %}<span class="post-desc">{{ post.description }}</span>{% endif %}
+        <span class="post-meta">
+          {% if post.reading_time %}<span class="post-rt">{{ post.reading_time }} min read</span>{% endif %}
+          {% if post.taxonomies.tags %}<span class="post-tags">{% for tag in post.taxonomies.tags %}<span class="tag">{{ tag }}</span>{% endfor %}</span>{% endif %}
+        </span>
       </a>
       {% endfor %}
     </div>
@@ -48,8 +53,13 @@
     <div class="post-list">
       {% for post in section.pages %}
       <a class="post instant {% if post.extra.featured %}featured{% endif %}" href="{{ post.path }}">
-        <span>{{ post.title }}</span>
+        <span class="post-title">{{ post.title }}</span>
         <span class="date">{{ post.date | date(format=section.extra.date_format) }}</span>
+        {% if post.description %}<span class="post-desc">{{ post.description }}</span>{% endif %}
+        <span class="post-meta">
+          {% if post.reading_time %}<span class="post-rt">{{ post.reading_time }} min read</span>{% endif %}
+          {% if post.taxonomies.tags %}<span class="post-tags">{% for tag in post.taxonomies.tags %}<span class="tag">{{ tag }}</span>{% endfor %}</span>{% endif %}
+        </span>
       </a>
       {% endfor %}
     </div>

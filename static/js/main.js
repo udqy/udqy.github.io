@@ -436,12 +436,7 @@ function enableArchToggle() {
     body.classList.toggle('theme-arch', on);
     localStorage.setItem('theme-arch', on ? 'on' : 'off');
     if (toggleBtn) toggleBtn.setAttribute('aria-pressed', String(on));
-    // Mutually exclusive with Win98 — turning the rice on evicts retro mode.
     if (on) {
-      body.classList.remove('theme-98');
-      localStorage.setItem('theme-98', 'off');
-      const retroBtn = document.querySelector('#retro-toggle');
-      if (retroBtn) retroBtn.setAttribute('aria-pressed', 'false');
       // Play the "window open" animation only on this deliberate toggle, not on
       // page navigations (the pre-paint guard never adds this class on reload).
       const wrapper = document.querySelector('#wrapper');
@@ -449,6 +444,7 @@ function enableArchToggle() {
         wrapper.classList.add('hypr-anim');
         wrapper.addEventListener('animationend', () => wrapper.classList.remove('hypr-anim'), { once: true });
       }
+      loadArchVisitors();
     }
   }
 
@@ -470,27 +466,6 @@ function enableArchToggle() {
     ws.classList.toggle('active', match);
   });
 
-  // Neofetch dynamic fields (homepage only). Real values where the browser
-  // exposes them; CPU load isn't available anywhere, so the bar fakes that.
-  const setText = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
-  const cores = navigator.hardwareConcurrency || 8;
-  const memGB = navigator.deviceMemory || 8;
-  setText('arch-res', `${screen.width}x${screen.height}`);
-  setText('arch-cores', String(cores));
-  setText('arch-mem-total', `${memGB} GiB`);
-
-  // Live "uptime" — honest session time since the page loaded.
-  const fmtUptime = (s) => {
-    const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), sec = Math.floor(s % 60);
-    if (h) return `${h}h ${m}m`;
-    if (m) return `${m}m ${sec}s`;
-    return `${sec}s`;
-  };
-  const t0 = performance.now();
-  const tickUptime = () => setText('arch-uptime', fmtUptime((performance.now() - t0) / 1000));
-  tickUptime();
-  setInterval(tickUptime, 1000);
-
   // Bar clock.
   const clock = document.getElementById('arch-clock');
   if (clock) {
@@ -502,28 +477,62 @@ function enableArchToggle() {
     setInterval(tick, 10000);
   }
 
-  // Fake-but-plausible CPU load (unreadable in a browser) — a gentle random walk.
-  const cpuEl = document.getElementById('arch-cpu');
-  if (cpuEl) {
-    let cpu = 12;
-    setInterval(() => {
-      cpu = Math.max(2, Math.min(78, cpu + (Math.random() * 18 - 9)));
-      cpuEl.textContent = `${Math.round(cpu)}%`;
-    }, 1800);
-    cpuEl.textContent = `${cpu}%`;
-  }
-
-  // Memory module: real total, plausible fluctuating "used".
-  const memEl = document.getElementById('arch-mem');
-  if (memEl) {
-    const upd = () => {
-      const used = (memGB * (0.35 + Math.random() * 0.3)).toFixed(1);
-      memEl.textContent = `${used}/${memGB}G`;
+  // Reading progress — how far down the page you've scrolled. Honest, and the
+  // one bar metric that actually reacts to what the reader is doing.
+  const readEl = document.getElementById('arch-read');
+  if (readEl) {
+    const doc = document.documentElement;
+    let raf = 0;
+    const updRead = () => {
+      raf = 0;
+      const max = doc.scrollHeight - doc.clientHeight;
+      const pct = max > 8 ? Math.round((doc.scrollTop || 0) / max * 100) : 0;
+      readEl.textContent = `${Math.max(0, Math.min(100, pct))}%`;
     };
-    upd();
-    setInterval(upd, 3200);
+    const onScroll = () => { if (!raf) raf = requestAnimationFrame(updRead); };
+    addEventListener('scroll', onScroll, { passive: true });
+    addEventListener('resize', onScroll, { passive: true });
+    updRead();
   }
 
+  // Memory module: this tab's real JS heap (Chromium-only via performance.memory).
+  // Where the browser doesn't expose it (Firefox/Safari) the whole module hides
+  // rather than showing an invented number.
+  const memEl = document.getElementById('arch-mem');
+  const memMod = document.getElementById('arch-mem-mod');
+  const heap = performance.memory; // non-standard; undefined outside Chromium
+  if (memEl && heap) {
+    const updMem = () => {
+      const mb = heap.usedJSHeapSize / 1048576;
+      memEl.textContent = mb >= 1000 ? `${(mb / 1024).toFixed(1)}G` : `${Math.round(mb)}M`;
+    };
+    updMem();
+    setInterval(updMem, 2000);
+  } else if (memMod) {
+    memMod.hidden = true;
+  }
+
+  // Live visitor count in the bar (reuses the homepage endpoint, a read-only
+  // proxy). Kick off once now if the bar is already on screen; setArch fires it
+  // when the reader toggles into rice mode. loadArchVisitors is idempotent.
+  if (body.classList.contains('theme-arch')) loadArchVisitors();
+
+}
+
+// Fetch the visitor count into the bar module. Guarded so it runs at most once.
+function loadArchVisitors() {
+  const visMod = document.getElementById('arch-vis-mod');
+  if (!visMod || visMod.dataset.loaded) return;
+  visMod.dataset.loaded = '1';
+  fetch(visMod.dataset.endpoint)
+    .then(r => r.ok ? r.json() : Promise.reject(r.status))
+    .then(({ visitors }) => {
+      if (typeof visitors !== 'number') return;
+      const val = document.getElementById('arch-vis');
+      if (val) val.textContent = visitors.toLocaleString();
+      visMod.hidden = false;
+    })
+    .catch(() => { /* stay hidden rather than show a broken count */ });
 }
 
 function enableVisitorCount() {
@@ -541,7 +550,6 @@ function enableVisitorCount() {
     .catch(() => { /* leave it hidden rather than show a broken or zero count */ });
 }
 
-enableRetroToggle();
 enableArchToggle();
 enableVisitorCount();
 enablePrerender();

@@ -15,8 +15,11 @@
   </div>
   <div class="bar-center"><span id="arch-window-title"></span></div>
   <div class="bar-right">
-    <span class="bar-mod mod-cpu"><span class="mod-label">CPU</span><span class="mod-val" id="arch-cpu">--%</span></span>
-    <span class="bar-mod mod-mem"><span class="mod-label">MEM</span><span class="mod-val" id="arch-mem">--</span></span>
+    <span class="bar-mod mod-read" title="Reading progress"><span class="mod-label">READ</span><span class="mod-val" id="arch-read">0%</span></span>
+    <span class="bar-mod mod-mem" id="arch-mem-mod" title="This tab's JS heap"><span class="mod-label">MEM</span><span class="mod-val" id="arch-mem">--</span></span>
+    {% if config.extra.visitors_endpoint %}
+    <span class="bar-mod mod-vis" id="arch-vis-mod" hidden data-endpoint="{{ config.extra.visitors_endpoint }}" title="Visitors so far"><span class="mod-label">Visitors</span><span class="mod-val" id="arch-vis">--</span></span>
+    {% endif %}
     <span class="bar-mod mod-clock"><span class="mod-val" id="arch-clock">--:--</span></span>
   </div>
 </div>

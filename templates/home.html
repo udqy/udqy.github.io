@@ -41,42 +41,35 @@
        mode (see linux.scss). Dynamic fields (cores/memory/resolution/uptime)
        are filled by enableArchToggle in main.js. #}
     <section id="arch-fetch" aria-hidden="true">
-<pre class="af-logo">                   -&#96;
-                  .o+&#96;
-                 &#96;ooo/
-                &#96;+oooo:
-               &#96;+oooooo:
-               -+oooooo+:
-             &#96;/:-:++oooo+:
-            &#96;/++++/+++++++:
-           &#96;/++++++++++++++:
-          &#96;/+++ooooooooooooo/&#96;
-         ./ooosssso++osssssso+&#96;
-        .oossssso-&#96;&#96;&#96;&#96;/ossssss+&#96;
-       -osssssso.      :ssssssso.
-      :osssssss/        osssso+++.
-     /ossssssss/        +ssssooo/-
-   &#96;/ossssso+/:-        -:/+osssso+-
-  &#96;+sso+:-&#96;                 &#96;.-/+oso:
- &#96;++:.                           &#96;-/+/
- .&#96;                                 &#96;/</pre>
+      {# Colour ASCII portrait (generated from static/img/avatar.jpg) standing in
+         for the usual distro logo. Loaded as data so this template stays small. #}
+      {% set portrait = load_data(path="img/portrait.html") %}
+      {{ portrait | safe }}
+      {# Role is pulled live from the newest entry in the Work section. #}
+      {% set work_path = config.extra.work_section_path | default(value="/work") | trim_start_matches(pat="/") %}
+      {% set work_section = get_section(path=work_path ~ "/_index.md") %}
+      {% set latest_work = work_section.pages | first %}
       <div class="af-info">
+        {# The first block is real "about me" info — Role tracks your latest Work
+           entry automatically; edit the rest freely. The lower rows keep the
+           neofetch flavour (your actual rice). #}
         <div class="af-line"><span class="af-user">uday</span>@<span class="af-host">arch</span></div>
         <div class="af-rule">---------------</div>
-        <div class="af-row"><span class="af-key">OS</span> Arch Linux x86_64</div>
-        <div class="af-row"><span class="af-key">Host</span> udqy.github.io</div>
-        <div class="af-row"><span class="af-key">Kernel</span> 6.x-arch1-1</div>
-        <div class="af-row"><span class="af-key">WM</span> Hyprland</div>
-        <div class="af-row"><span class="af-key">Shell</span> zsh</div>
-        <div class="af-row"><span class="af-key">Terminal</span> kitty</div>
+        <div class="af-row"><span class="af-key">Name</span> {{ section.extra.name }}</div>
+        {% if latest_work %}<div class="af-row"><span class="af-key">Role</span> {{ latest_work.title }}{% if latest_work.extra.company %} @ {{ latest_work.extra.company }}{% endif %}</div>{% endif %}
+        <div class="af-row"><span class="af-key">Location</span> Bangalore, India</div>
+        <div class="af-row"><span class="af-key">Focus</span> AI · ML · Computer Vision</div>
+        <div class="af-row"><span class="af-key">Stack</span> Python · FastAPI · LangChain · Docker</div>
+        <div class="af-row"><span class="af-key">Langs</span> Python, C#, SQL</div>
+        <div class="af-row"><span class="af-key">Since</span> 2021</div>
         <div class="af-row"><span class="af-key">Editor</span> nvim</div>
-        <div class="af-row"><span class="af-key">Resolution</span> <span id="arch-res">—</span></div>
-        <div class="af-row"><span class="af-key">CPU</span> <span id="arch-cores">—</span> cores</div>
-        <div class="af-row"><span class="af-key">Memory</span> <span id="arch-mem-total">—</span></div>
-        <div class="af-row"><span class="af-key">Uptime</span> <span id="arch-uptime">—</span></div>
+        <div class="af-row"><span class="af-key">Shell</span> zsh</div>
+        <div class="af-row"><span class="af-key">WM</span> Hyprland</div>
+        <div class="af-row"><span class="af-key">Distro</span> Arch Linux</div>
         {% if section.extra.bio %}<div class="af-tagline">{{ section.extra.bio }}</div>{% endif %}
+        {# A single amber ramp (dark → accent → light) instead of a rainbow row. #}
         <div class="af-palette">
-          <span style="background:var(--ln-bg-dark)"></span><span style="background:var(--ln-red)"></span><span style="background:var(--ln-green)"></span><span style="background:var(--ln-yellow)"></span><span style="background:var(--ln-accent)"></span><span style="background:var(--ln-magenta)"></span><span style="background:var(--ln-cyan)"></span><span style="background:var(--ln-fg)"></span>
+          <span style="background:var(--ln-bg-dark)"></span><span style="background:color-mix(in srgb, var(--ln-accent) 22%, var(--ln-bg-dark))"></span><span style="background:color-mix(in srgb, var(--ln-accent) 45%, var(--ln-bg-dark))"></span><span style="background:color-mix(in srgb, var(--ln-accent) 72%, var(--ln-bg-dark))"></span><span style="background:var(--ln-accent)"></span><span style="background:color-mix(in srgb, var(--ln-accent) 62%, #fff)"></span><span style="background:color-mix(in srgb, var(--ln-accent) 32%, #fff)"></span><span style="background:var(--ln-fg)"></span>
         </div>
       </div>
     </section>
@@ -116,8 +109,6 @@
           <span class="sun-icon">{{ sun_icon | safe }}</span>
         </button>
         {% endif %}
-        {% set retro_icon = load_data(path="icon/retro.svg") %}
-        <button id="retro-toggle" aria-label="Windows 98 retro mode" title="Retro mode">{{ retro_icon | safe }}</button>
         {% set arch_icon = load_data(path="icon/arch.svg") %}
         <button id="arch-toggle" aria-label="Arch Linux rice mode" title="Linux mode">{{ arch_icon | safe }}</button>
       </div>
