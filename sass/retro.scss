@@ -78,9 +78,6 @@ body.theme-98 {
     cursor: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='24' viewBox='0 0 20 24'%3E%3Cpath d='M5 1v15l4-4h6z' fill='%23fff' stroke='%23000'/%3E%3Cpath d='M8 12h2v6H8z' fill='%23fff' stroke='%23000'/%3E%3C/svg%3E") 6 1, pointer;
   }
 
-  // The homepage cursor-glow tint clashes with the desktop; kill it.
-  #cursor-glow { display: none !important; }
-
   // Hide the light/dark toggle while retro owns the palette.
   #theme-toggle, .theme-toggle-btn { display: none !important; }
 
@@ -409,3 +406,197 @@ html body.theme-98 #wrapper {
   min-height: 0;
   @media (max-width: 600px) { margin: 0.5em; }
 }
+
+/* =========================================================================
+   CRT screen effect — scanlines + vignette over the whole retro view.
+   pointer-events:none so it never blocks clicks; sits above every window and
+   the taskbar, like the glass of an actual monitor.
+   ========================================================================= */
+#crt-overlay { display: none; }
+
+body.theme-98 #crt-overlay {
+  display: block;
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  pointer-events: none;
+  // Thin, faint scanlines over a wider gap so text stays legible.
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.05) 0 1px,
+    rgba(0, 0, 0, 0) 1px 4px
+  );
+
+  // Light vignette — just a hint of curvature at the far corners.
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0) 68%, rgba(0, 0, 0, 0.2) 100%);
+  }
+}
+
+// Barely-there brightness flicker — subtle and slow, never a fast strobe.
+@keyframes crt-flicker {
+  0%, 100% { opacity: 1; }
+  48% { opacity: 0.99; }
+  50% { opacity: 0.96; }
+  52% { opacity: 0.99; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  body.theme-98 #crt-overlay { animation: crt-flicker 6s ease-in-out infinite; }
+}
+
+/* =========================================================================
+   Desktop icons — sit on the teal, behind the window. Wide screens only, so
+   they never collide with the centred window.
+   ========================================================================= */
+#win98-desktop { display: none; }
+
+body.theme-98 #win98-desktop {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  z-index: 1;
+  @media (max-width: 1120px) { display: none; }
+}
+
+// Scoped under body.theme-98 so it out-specifies `body.theme-98 button`
+// (these icons are <a>/<button>, and must NOT pick up the silver bevel).
+body.theme-98 .desk-icon {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  width: 86px;
+  min-width: 0;
+  min-height: 0;
+  padding: 6px 4px 5px;
+  background: none;
+  box-shadow: none;
+  border: 1px dotted transparent;
+  text-decoration: none;
+  cursor: pointer;
+
+  .desk-glyph { line-height: 0; }
+  .desk-label {
+    font-family: "Pixelated MS Sans Serif", Arial, sans-serif;
+    -webkit-font-smoothing: none;
+    font-size: 11px;
+    color: #fff;
+    text-align: center;
+    line-height: 1.25;
+    padding: 1px 3px;
+    text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.7);
+  }
+  &:hover .desk-label,
+  &:focus-visible .desk-label { background: $navy; }
+  &:focus-visible { outline: none; border-color: #fff; }
+}
+body.theme-98 .desk-icon[role="img"] { cursor: default; }
+
+/* =========================================================================
+   Minesweeper
+   ========================================================================= */
+.ms-window { display: none; }
+
+body.theme-98 .ms-window {
+  position: fixed;
+  top: 84px;
+  left: calc(50% - 96px);
+  z-index: 800;              // above the page window, below the taskbar
+  background: $silver;
+  @include window;
+  padding: 3px;
+  &.open { display: block; }
+}
+
+.ms-titlebar { cursor: move; touch-action: none; }
+
+.ms-body { padding: 6px; }
+
+.ms-hud {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 4px 6px;
+  margin-bottom: 6px;
+  background: $silver;
+  @include sunken;
+}
+.ms-led {
+  font-family: "Courier New", monospace;
+  font-weight: 700;
+  font-size: 20px;
+  line-height: 1;
+  letter-spacing: 1px;
+  color: #ff2b2b;
+  background: #000;
+  padding: 2px 4px;
+  min-width: 46px;
+  text-align: right;
+}
+body.theme-98 .ms-face {
+  width: 30px;
+  height: 30px;
+  min-width: 0;
+  min-height: 0;
+  padding: 0;
+  font-size: 16px;
+  line-height: 1;
+  background: $silver;
+  @include raised;
+  &:active { @include pressed; }
+}
+.ms-grid {
+  display: grid;
+  grid-template-columns: repeat(9, 22px);
+  gap: 0;
+  padding: 4px;
+  background: $silver;
+  @include sunken;
+}
+body.theme-98 .ms-cell {
+  width: 22px;
+  height: 22px;
+  min-width: 0;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  display: grid;
+  place-items: center;
+  font-family: "Pixelated MS Sans Serif", Arial, sans-serif;
+  -webkit-font-smoothing: none;
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 1;
+  background: $silver;
+  @include raised;
+  cursor: pointer;
+  user-select: none;
+
+  &.revealed {
+    box-shadow: inset 1px 1px #a4a4a4;
+    background: #bdbdbd;
+    cursor: default;
+  }
+  &.mine.exploded { background: #d40000; }
+  &[data-n="1"] { color: #0000ff; }
+  &[data-n="2"] { color: #008000; }
+  &[data-n="3"] { color: #ff0000; }
+  &[data-n="4"] { color: #000080; }
+  &[data-n="5"] { color: #800000; }
+  &[data-n="6"] { color: #008080; }
+  &[data-n="7"] { color: #000000; }
+  &[data-n="8"] { color: #808080; }
+}
+
+/* Give the page window and taskbar a stacking order above the desktop icons. */
+body.theme-98 #wrapper { position: relative; z-index: 10; }
