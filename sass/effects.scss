@@ -1,50 +1,5 @@
-// A primary-color glow trailing the cursor. Homepage only -- main.js gates on
-// body.homepage and never builds the element elsewhere. Kept out of main.scss
-// (which is a patched copy of the theme's) so it stays easy to tune or drop.
-
-:root {
-  --glow-size: 34rem;
-  --glow-opacity: 0.09;
-  --glow-ease: 0.14; // trail lag, consumed by JS
-}
-
-body.dark {
-  // The tint reads weaker against a near-black background, so lift it.
-  --glow-opacity: 0.15;
-}
-
-#cursor-glow {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: var(--glow-size);
-  height: var(--glow-size);
-  // Shift by half so translate() positions the glow's centre, not its corner.
-  margin-top: calc(var(--glow-size) / -2);
-  margin-left: calc(var(--glow-size) / -2);
-  z-index: 0;
-  pointer-events: none;
-  opacity: 0;
-  will-change: transform;
-  transition: opacity 0.5s ease;
-  background: radial-gradient(
-    circle closest-side,
-    var(--primary-color) 0%,
-    transparent 100%
-  );
-
-  &.visible {
-    opacity: var(--glow-opacity);
-  }
-}
-
-// The glow is a positioned element, so page content needs its own stacking
-// context to stay painted above it. Scoped, so this can't perturb stacking on
-// pages that never build a glow.
-body.homepage #wrapper {
-  position: relative;
-  z-index: 1;
-}
+// Small homepage tweaks kept out of main.scss (which is a patched copy of the
+// theme's) so they stay easy to tune or drop.
 
 // Shares the closing row with the "more" link: count on the left, link on the
 // right. Baseline alignment matters because the two sit at different sizes.
@@ -62,10 +17,54 @@ body.homepage .read-more {
   font-variant-numeric: tabular-nums;
 }
 
-// No cursor to follow on touch devices, and the trail is motion some people
-// don't want.
-@media (hover: none), (pointer: coarse), (prefers-reduced-motion: reduce) {
-  #cursor-glow {
-    display: none;
+// Left-align the whole site instead of centring it — a comfortable, responsive
+// left gap rather than flush to the edge. Normal mode only; retro keeps its
+// centred window (the `html body.theme-98 #wrapper` rule out-specifies this).
+$page-gap: clamp(1.5rem, 8vw, 10rem);
+
+// Single-column pages (home, blog, work, tags, categories): pin left.
+body:not(.post):not(.theme-98) #wrapper {
+  margin-left: $page-gap;
+  margin-right: auto;
+}
+
+// Post: it's a two-column flex row (empty #blank spacer | article | TOC aside).
+// Left-align the article and push the TOC to the far right. Only where that
+// layout exists — the theme collapses to a single column at <=1024px.
+@media (min-width: 1025px) {
+  body.post:not(.theme-98) {
+    #wrapper { justify-content: flex-start; }
+    #blank { width: $page-gap; }
+    main { margin: 0; }
+    aside { margin-left: auto; }
   }
+}
+
+// Dark-mode toggle on the blog/work list pages, sat next to the Back link on
+// the left. (Home and post pages have their own toggles already.)
+.page-head {
+  display: flex;
+  align-items: center;
+  gap: 0.25em;
+  margin-top: 1em; // spacing that the back-link's own margin-top used to give
+
+  header { margin: 0; }
+  // As a flex item the header doesn't margin-collapse, so the link's own
+  // margin-top would shove its text low and misalign it with the toggle.
+  header a { margin-top: 0; }
+}
+.theme-toggle-btn {
+  line-height: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-pale-color);
+  padding: 4px;
+  vertical-align: middle;
+  &:hover { color: var(--primary-color); }
+  .sun-icon { display: none; }
+}
+body.dark .theme-toggle-btn {
+  .sun-icon { display: inline; }
+  .moon-icon { display: none; }
 }

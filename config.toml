@@ -54,7 +54,7 @@ not_found_error_text = "404 Not Found"
 not_found_recover_text = "« back to home »"
 
 reaction = true # Whether to enable anonymous emoji reactions (Note: You need to set up a working api endpoint to enable this feature)
-reaction_align = "right" # "left" | "center" | "right"
+reaction_align = "left" # "left" | "center" | "right"
 reaction_endpoint = "https://jbueblpurujnowslnroy.supabase.co/functions/v1/reactions"
 
 # Visitor count on the homepage, proxied from Umami (the API key stays server-side).
