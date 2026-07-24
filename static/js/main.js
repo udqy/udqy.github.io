@@ -245,6 +245,171 @@ function enableReaction() {
 }
 
 enableThemeToggle();
+
+function enableRetroToggle() {
+  const body = document.body;
+  const wrapper = document.querySelector('#wrapper');
+  const floatBtn = document.querySelector('#retro-toggle');
+  const startBtn = document.querySelector('#win98-start');
+  const startMenu = document.querySelector('#win98-startmenu');
+  let dragX = 0, dragY = 0; // window drag offset, reset each time retro opens
+
+  // Build the window title bar once. It's hidden by CSS until retro is active,
+  // so it never leaks into the normal-mode layout.
+  if (wrapper && !wrapper.querySelector('.win98-titlebar')) {
+    const bar = document.createElement('div');
+    bar.className = 'win98-titlebar';
+
+    const titleWrap = document.createElement('span');
+    titleWrap.className = 'win98-title';
+    const icon = document.createElement('span');
+    icon.className = 'win98-icon';
+    icon.textContent = '💻';
+    const label = document.createElement('span');
+    label.textContent = (document.title || 'Uday Jadhav').trim();
+    titleWrap.append(icon, label);
+
+    const controls = document.createElement('span');
+    controls.className = 'win98-controls';
+    for (const [glyph, aria, cls] of [['_', 'Minimize', ''], ['□', 'Maximize', ''], ['✕', 'Close', 'win98-close']]) {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.textContent = glyph;
+      b.setAttribute('aria-label', aria);
+      if (cls) b.className = cls; else b.tabIndex = -1;
+      controls.append(b);
+    }
+    bar.append(titleWrap, controls);
+    wrapper.prepend(bar);
+    bar.querySelector('.win98-close').addEventListener('click', () => setRetro(false));
+  }
+
+  // Drag the window by its title bar (retro only). Applied as a transform so it
+  // never disturbs the normal-mode layout; the open-animation is cancelled on
+  // grab so its forwards-fill can't clobber the drag transform.
+  const titlebar = wrapper && wrapper.querySelector('.win98-titlebar');
+  if (titlebar) {
+    let startX, startY, baseX, baseY, dragging = false;
+    titlebar.addEventListener('pointerdown', (e) => {
+      if (!body.classList.contains('theme-98')) return;
+      if (e.target.closest('.win98-controls')) return; // buttons aren't drag handles
+      dragging = true;
+      startX = e.clientX; startY = e.clientY;
+      baseX = dragX; baseY = dragY;
+      wrapper.style.animation = 'none';
+      try { titlebar.setPointerCapture(e.pointerId); } catch (_) {}
+      e.preventDefault();
+    });
+    titlebar.addEventListener('pointermove', (e) => {
+      if (!dragging) return;
+      dragX = baseX + (e.clientX - startX);
+      dragY = baseY + (e.clientY - startY);
+      wrapper.style.transform = `translate(${dragX}px, ${dragY}px)`;
+    });
+    const endDrag = (e) => {
+      if (!dragging) return;
+      dragging = false;
+      try { titlebar.releasePointerCapture(e.pointerId); } catch (_) {}
+    };
+    titlebar.addEventListener('pointerup', endDrag);
+    titlebar.addEventListener('pointercancel', endDrag);
+  }
+
+  // A short, copyright-safe arpeggio in the spirit of the Win98 chime.
+  function playBootChime() {
+    try {
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return;
+      const ctx = new AC();
+      const now = ctx.currentTime;
+      const master = ctx.createGain();
+      master.gain.value = 0.18;
+      master.connect(ctx.destination);
+      [[523.25, 0], [659.25, 0.11], [783.99, 0.22], [1046.5, 0.33]].forEach(([f, t]) => {
+        const o = ctx.createOscillator();
+        const g = ctx.createGain();
+        o.type = 'triangle';
+        o.frequency.value = f;
+        g.gain.setValueAtTime(0.0001, now + t);
+        g.gain.exponentialRampToValueAtTime(0.25, now + t + 0.02);
+        g.gain.exponentialRampToValueAtTime(0.0001, now + t + 0.9);
+        o.connect(g); g.connect(master);
+        o.start(now + t); o.stop(now + t + 0.95);
+      });
+      setTimeout(() => ctx.close().catch(() => {}), 1700);
+    } catch (e) { /* audio blocked; not important */ }
+  }
+
+  // Re-run the window-open animation when toggling on without a reload.
+  function replayWindowOpen() {
+    if (!wrapper) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    wrapper.style.animation = 'none';
+    void wrapper.offsetWidth;
+    wrapper.style.animation = '';
+  }
+
+  function closeStartMenu() {
+    if (!startMenu) return;
+    startMenu.classList.remove('open');
+    startMenu.setAttribute('aria-hidden', 'true');
+    if (startBtn) { startBtn.classList.remove('open'); startBtn.setAttribute('aria-expanded', 'false'); }
+  }
+  function toggleStartMenu() {
+    if (!startMenu || !startBtn) return;
+    const open = !startMenu.classList.contains('open');
+    startMenu.classList.toggle('open', open);
+    startMenu.setAttribute('aria-hidden', String(!open));
+    startBtn.classList.toggle('open', open);
+    startBtn.setAttribute('aria-expanded', String(open));
+  }
+
+  function setRetro(on) {
+    body.classList.toggle('theme-98', on);
+    localStorage.setItem('theme-98', on ? 'on' : 'off');
+    if (floatBtn) floatBtn.setAttribute('aria-pressed', String(on));
+    if (on) {
+      // Fresh window: recentre before the open animation replays.
+      dragX = 0; dragY = 0;
+      if (wrapper) wrapper.style.transform = '';
+      replayWindowOpen();
+      playBootChime();
+    } else {
+      closeStartMenu();
+    }
+  }
+
+  if (floatBtn) {
+    floatBtn.setAttribute('aria-pressed', String(body.classList.contains('theme-98')));
+    floatBtn.addEventListener('click', () => setRetro(!body.classList.contains('theme-98')));
+  }
+  const trayToggle = document.querySelector('#win98-tray-toggle');
+  if (trayToggle) trayToggle.addEventListener('click', () => setRetro(false));
+  const shutdown = document.querySelector('#win98-shutdown');
+  if (shutdown) shutdown.addEventListener('click', () => setRetro(false));
+  if (startBtn) startBtn.addEventListener('click', (e) => { e.stopPropagation(); toggleStartMenu(); });
+  document.addEventListener('click', (e) => {
+    if (startMenu && startMenu.classList.contains('open') && !startMenu.contains(e.target) && e.target !== startBtn) {
+      closeStartMenu();
+    }
+  });
+
+  // Taskbar clock.
+  const clock = document.querySelector('#win98-clock');
+  if (clock) {
+    const tick = () => {
+      const d = new Date();
+      let h = d.getHours();
+      const m = String(d.getMinutes()).padStart(2, '0');
+      const ap = h < 12 ? 'AM' : 'PM';
+      h = h % 12 || 12;
+      clock.textContent = `${h}:${m} ${ap}`;
+    };
+    tick();
+    setInterval(tick, 15000);
+  }
+}
+
 function enableCursorGlow() {
   // Homepage only. Every other page on this site is for reading, and a tint
   // tracking the cursor pulls the eye while you're mid-paragraph.
@@ -315,6 +480,7 @@ function enableVisitorCount() {
     .catch(() => { /* leave it hidden rather than show a broken or zero count */ });
 }
 
+enableRetroToggle();
 enableCursorGlow();
 enableVisitorCount();
 enablePrerender();

@@ -73,6 +73,8 @@
           <span class="sun-icon">{{ sun_icon | safe }}</span>
         </button>
         {% endif %}
+        {% set retro_icon = load_data(path="icon/retro.svg") %}
+        <button id="retro-toggle" aria-label="Windows 98 retro mode" title="Retro mode">{{ retro_icon | safe }}</button>
       </div>
     </section>
     <section id="brief" class="prose">

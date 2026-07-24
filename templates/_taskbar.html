@@ -1,0 +1,24 @@
+{# Windows 98 taskbar + Start menu. Always in the DOM but hidden by CSS unless
+   `body.theme-98` is active. The clock, Start-menu toggle and the retro exit
+   button are wired up in main.js (enableRetroToggle). #}
+<div id="win98-startmenu" aria-hidden="true">
+  <div class="win98-startmenu-rail">{{ config.title }}</div>
+  <ul>
+    <li><a href="/">🏠 Home</a></li>
+    {% for item in config.extra.sections %}
+    <li><a href="{{ item.path }}"{% if item.is_external %} target="_blank" rel="noreferrer noopener"{% endif %}>📁 {{ item.name }}</a></li>
+    {% endfor %}
+    <li><hr></li>
+    <li><button type="button" id="win98-shutdown">🖥️ Exit retro mode</button></li>
+  </ul>
+</div>
+
+<div id="win98-taskbar" role="navigation" aria-label="taskbar">
+  <button type="button" class="win98-start" id="win98-start" aria-haspopup="true" aria-expanded="false">
+    <span class="win98-flag">🪟</span> Start
+  </button>
+  <div class="win98-tray">
+    <button type="button" id="win98-tray-toggle" title="Exit retro mode" aria-label="Exit retro mode">💻</button>
+    <span id="win98-clock" aria-live="off">--:--</span>
+  </div>
+</div>

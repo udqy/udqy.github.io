@@ -1,0 +1,411 @@
+/* retro.scss — "PROPER PROPER" Windows 98 skin
+   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   Everything is scoped under `body.theme-98`, so this whole sheet is inert in
+   normal mode. Bevel recipes and control sprites are lifted verbatim from
+   98.css (https://github.com/jdan/98.css, MIT) so the chrome is authentic;
+   the layout re-skin below is hand-written to keep long-form prose readable
+   (98.css's own h1{font-size:5rem} would wreck a blog post).
+   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+
+$teal:   #008080;
+$silver: #c0c0c0;
+$gray:   #808080;
+$dark:   #0a0a0a;
+$light:  #dfdfdf;
+$navy:   #000080;
+
+// Raised control (buttons, taskbar buttons)
+@mixin raised {
+  box-shadow: inset -1px -1px $dark, inset 1px 1px #fff,
+              inset -2px -2px $gray, inset 2px 2px $light;
+}
+// Pressed / active control
+@mixin pressed {
+  box-shadow: inset -1px -1px #fff, inset 1px 1px $dark,
+              inset -2px -2px $light, inset 2px 2px $gray;
+}
+// Window frame (outer)
+@mixin window {
+  box-shadow: inset -1px -1px $dark, inset 1px 1px $light,
+              inset -2px -2px $gray, inset 2px 2px #fff;
+}
+// Sunken field (inputs, code, document area)
+@mixin sunken {
+  box-shadow: inset -1px -1px #fff, inset 1px 1px $gray,
+              inset -2px -2px $light, inset 2px 2px $dark;
+}
+
+/* Vendored pixel font (from 98.css package, served locally) */
+@font-face {
+  font-family: "Pixelated MS Sans Serif";
+  font-style: normal;
+  font-weight: 400;
+  src: url("/fonts/ms_sans_serif.woff2") format("woff2"),
+       url("/fonts/ms_sans_serif.woff") format("woff");
+}
+@font-face {
+  font-family: "Pixelated MS Sans Serif";
+  font-style: normal;
+  font-weight: 700;
+  src: url("/fonts/ms_sans_serif_bold.woff2") format("woff2"),
+       url("/fonts/ms_sans_serif_bold.woff") format("woff");
+}
+
+/* Injected title bar is hidden until retro mode dresses it (see body.theme-98). */
+.win98-titlebar { display: none; }
+
+/* Window-open flourish — "noticeable but tasteful" (~180ms scale+fade).
+   Runs on every retro page load and is re-triggered on toggle-on via JS. */
+@keyframes win98-open {
+  from { opacity: 0; transform: scale(0.96) translateY(6px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* =========================================================================
+   Desktop
+   ========================================================================= */
+body.theme-98 {
+  background: $teal;
+  color: #222;
+  font-family: "Pixelated MS Sans Serif", Arial, sans-serif;
+  -webkit-font-smoothing: none;
+  font-size: 15px;
+  line-height: 1.55;
+  padding-bottom: 44px; // room for the taskbar
+  cursor: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Cpath d='M1 1v11l3-3 2 4 2-1-2-4h4z' fill='%23fff' stroke='%23000' stroke-width='1' stroke-linejoin='round'/%3E%3C/svg%3E") 1 1, auto;
+
+  a, button, summary, .post, label, [role="button"] {
+    cursor: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='24' viewBox='0 0 20 24'%3E%3Cpath d='M5 1v15l4-4h6z' fill='%23fff' stroke='%23000'/%3E%3Cpath d='M8 12h2v6H8z' fill='%23fff' stroke='%23000'/%3E%3C/svg%3E") 6 1, pointer;
+  }
+
+  // The homepage cursor-glow tint clashes with the desktop; kill it.
+  #cursor-glow { display: none !important; }
+
+  // Hide the light/dark toggle while retro owns the palette.
+  #theme-toggle, .theme-toggle-btn { display: none !important; }
+
+  /* =======================================================================
+     The window: #wrapper is dressed as one application window
+     ======================================================================= */
+  #wrapper {
+    background: $silver;
+    @include window;
+    padding: 3px;
+    display: flex;
+    flex-direction: column;
+    max-width: 960px;
+    min-height: 0 !important;
+    margin: 1.5em auto;
+    @media (prefers-reduced-motion: no-preference) {
+      animation: win98-open 180ms ease-out both;
+    }
+    @media (max-width: 600px) {
+      margin: 0.5em;
+    }
+  }
+
+  // Title bar injected by JS as first child of #wrapper.
+  .win98-titlebar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: linear-gradient(90deg, $navy, #1084d0);
+    color: #fff;
+    padding: 3px 3px 3px 4px;
+    user-select: none;
+    cursor: move; // drag handle for the window
+    touch-action: none;
+
+    .win98-controls button { cursor: pointer; }
+
+    .win98-title {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-weight: 700;
+      font-size: 12px;
+      letter-spacing: 0;
+    }
+    .win98-title .win98-icon { font-size: 13px; line-height: 1; }
+
+    .win98-controls { display: flex; gap: 2px; }
+    .win98-controls button {
+      width: 16px;
+      height: 14px;
+      min-width: 16px;
+      min-height: 14px;
+      padding: 0;
+      background: $silver;
+      @include raised;
+      display: grid;
+      place-items: center;
+      font-size: 9px;
+      font-weight: 700;
+      color: #000;
+      line-height: 1;
+      &:active { @include pressed; }
+    }
+  }
+
+  // Everything after the title bar is the window body.
+  main {
+    background: $silver;
+    padding: 10px 12px 16px;
+    min-height: 0 !important;
+    width: 100%;
+    max-width: none !important;
+  }
+
+  /* Post page has aside (TOC) + main as flex row; stack them in retro so the
+     single-window illusion holds. TOC becomes a panel above the article. */
+  &.post #wrapper { display: flex; }
+  &.post #blank { display: none; }
+  &.post aside {
+    position: static;
+    width: 100%;
+    background: $silver;
+    padding: 6px 12px 0;
+  }
+
+  /* =======================================================================
+     Typography — pixel font, readable sizes (NOT 98.css's 5rem headings)
+     ======================================================================= */
+  h1 { font-size: 1.7em; }
+  h2 { font-size: 1.4em; }
+  h3 { font-size: 1.2em; }
+  h4, h5, h6 { font-size: 1.05em; }
+  h1, h2, h3, h4, h5, h6 { font-weight: 700; line-height: 1.3; }
+
+  a { color: #0000ff; text-decoration: underline; }
+  a:focus { outline: 1px dotted #0000ff; }
+  // Site accent bleeds into prose/lists/tags via deeper selectors
+  // (e.g. `body.post article #tags a`); !important keeps the skin authoritative
+  // without chasing each one. Post-list titles use their own rule, untouched.
+  .prose a, .prose a:hover, .read-more a,
+  #tags a, #post-info a { color: #0000ff !important; }
+
+  /* Reading area: give prose a white "document" panel so body text stays
+     crisp on the silver window. */
+  .prose {
+    background: #fff;
+    @include sunken;
+    padding: 16px 18px;
+    color: #000;
+  }
+
+  /* =======================================================================
+     Controls
+     ======================================================================= */
+  button, input[type="submit"], input[type="reset"] {
+    font-family: inherit;
+    font-size: 12px;
+    min-height: 23px;
+    min-width: 40px;
+    padding: 2px 10px;
+    border: none;
+    border-radius: 0;
+    background: $silver;
+    color: #000;
+    @include raised;
+    &:active:not(:disabled) { @include pressed; }
+    &:focus { outline: 1px dotted #000; outline-offset: -4px; }
+  }
+
+  input[type="text"], input[type="email"], input[type="search"], textarea {
+    font-family: inherit;
+    background: #fff;
+    border: none;
+    border-radius: 0;
+    @include sunken;
+    padding: 3px 4px;
+  }
+
+  /* Code blocks → sunken white panels */
+  pre {
+    background: #fff;
+    @include sunken;
+    padding: 12px 10px;
+    border-radius: 0;
+  }
+  .codeblock { position: relative; }
+
+  /* Post list items → selectable rows */
+  .post-list .post {
+    padding: 4px 6px;
+    border: 1px solid transparent;
+    span, .date { color: #000; }        // file-explorer look, not the site accent
+    &:hover { background: $navy; color: #fff; }
+    &:hover span, &:hover .date { color: #fff; }
+    &:focus-within { outline: 1px dotted #000; }
+    &.featured { font-weight: 700; }
+  }
+
+  /* Reaction / back-to-top / copy buttons inherit the raised look above.
+     Copy button sits inside code panels. */
+  #back-to-top {
+    background: $silver;
+    @include raised;
+    border-radius: 0;
+    &:active { @include pressed; }
+  }
+
+  /* Blockquotes / callouts as inset panels */
+  blockquote, .callout {
+    background: #fff;
+    @include sunken;
+    border-radius: 0;
+  }
+
+  /* Classic bevelled scrollbars (WebKit) */
+  ::-webkit-scrollbar { width: 16px; height: 17px; }
+  ::-webkit-scrollbar-track { background: $light; }
+  ::-webkit-scrollbar-thumb {
+    background: $silver;
+    @include raised;
+    border: 0;
+    border-radius: 0;
+  }
+  ::-webkit-scrollbar-corner { background: $light; }
+
+  /* Selection = classic navy highlight */
+  ::selection { background: $navy; color: #fff; }
+}
+
+/* =========================================================================
+   Retro toggle — inline icon button on the homepage, beside the dark toggle.
+   Inherits the plain icon-button look from `#links #right button`; in retro
+   mode we keep it plain (never the silver 98 bevel) so it stays a clean icon.
+   ========================================================================= */
+body.theme-98 #retro-toggle {
+  background: none;
+  box-shadow: none;
+  min-width: 0;
+  min-height: 0;
+  padding: 0;
+  color: #000;
+  &:active { box-shadow: none; }
+}
+
+/* =========================================================================
+   Taskbar (markup lives in _taskbar.html; hidden unless retro is active)
+   ========================================================================= */
+#win98-taskbar { display: none; }
+
+body.theme-98 #win98-taskbar {
+  position: fixed;
+  left: 0; right: 0; bottom: 0;
+  z-index: 1000;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 4px;
+  background: $silver;
+  box-shadow: inset 0 1px #fff, inset 0 2px $light;
+  font-family: "Pixelated MS Sans Serif", Arial, sans-serif;
+  -webkit-font-smoothing: none;
+  font-size: 12px;
+
+  .win98-start {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    height: 26px;
+    padding: 0 8px 0 5px;
+    font-weight: 700;
+    background: $silver;
+    color: #000;
+    border: 0;
+    @include raised;
+    cursor: pointer;
+    &:active, &.open { @include pressed; }
+    .win98-flag { font-size: 14px; line-height: 1; }
+  }
+
+  .win98-tray {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    height: 26px;
+    padding: 0 8px;
+    box-shadow: inset -1px -1px #fff, inset 1px 1px $gray;
+  }
+  .win98-tray button {
+    background: none;
+    border: 0;
+    padding: 0;
+    font-size: 15px;
+    line-height: 1;
+    cursor: pointer;
+  }
+  #win98-clock { min-width: 48px; text-align: center; color: #000; }
+}
+
+/* Start menu popup */
+#win98-startmenu {
+  display: none;
+  position: fixed;
+  left: 4px;
+  bottom: 37px;
+  z-index: 1001;
+  width: 200px;
+  background: $silver;
+  @include raised;
+  padding: 3px;
+  font-family: "Pixelated MS Sans Serif", Arial, sans-serif;
+  -webkit-font-smoothing: none;
+
+  &.open { display: block; }
+
+  .win98-startmenu-rail {
+    position: absolute;
+    left: 3px; top: 3px; bottom: 3px;
+    width: 26px;
+    background: linear-gradient(180deg, $navy, #1084d0);
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    color: #fff;
+    font-weight: 700;
+    text-align: center;
+    padding: 8px 4px;
+    font-size: 15px;
+    letter-spacing: 1px;
+  }
+  ul { list-style: none; margin: 0; padding: 0 0 0 32px; }
+  li a, li button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 5px 8px;
+    background: none;
+    border: 0;
+    box-shadow: none;
+    text-align: left;
+    color: #000;
+    text-decoration: none;
+    font-size: 13px;
+    cursor: pointer;
+    &:hover { background: $navy; color: #fff; }
+  }
+  hr { border: 0; border-top: 1px solid $gray; border-bottom: 1px solid #fff; margin: 4px 2px; }
+}
+
+/* =========================================================================
+   Wrapper override — some templates (e.g. work.html) set their own
+   `body.<page> #wrapper` rules in a block-head <style> that loads AFTER
+   retro.css at equal specificity, which would otherwise re-inset the window
+   (padding) and stretch it full-height. `html body.theme-98` (specificity
+   1,1,2) beats those `body.<page> #wrapper` rules (1,1,1) regardless of order,
+   so the single-window chrome stays consistent across every page.
+   ========================================================================= */
+html body.theme-98 #wrapper {
+  display: flex;
+  flex-direction: column;
+  padding: 3px;
+  margin: 1.5em auto;
+  max-width: 960px;
+  min-height: 0;
+  @media (max-width: 600px) { margin: 0.5em; }
+}

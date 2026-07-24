@@ -36,6 +36,7 @@
   {% include "_custom_css.html" %}
   <link rel="stylesheet" href="/main.css">
   <link rel="stylesheet" href="/effects.css">
+  <link rel="stylesheet" href="/retro.css">
   {% block head %}{% endblock head %}
   {% include "_head_extend.html" %}
 </head>
@@ -51,7 +52,13 @@
     }
   </script>
   {% endif %}
+  {# Retro mode persists across sessions (localStorage), applied before paint to avoid a flash. #}
+  <script>
+    if (localStorage.getItem('theme-98') === 'on') document.body.classList.add('theme-98');
+  </script>
   {% block content %}{% endblock content %}
+  {# Retro entry lives on the homepage (see home.html). Taskbar is the in-retro chrome. #}
+  {% include "_taskbar.html" %}
   {% block script %}{% endblock script %}
   <script src="/js/main.js"></script>
 </body>
