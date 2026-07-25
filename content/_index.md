@@ -32,3 +32,5 @@ Hey there, I'm Uday!
 I solve problems, break things, and <span style="opacity:0.5">(hopefully)</span> learn from them. 
 
 This is my little corner of the internet, where I share my thoughts on software development, technology, my hobbies, and the occasional rabbit holes I wander into. Feel free to reach out for a quick chat!
+
+<span style="opacity:0.5">🚧 This site is a work in progress — things will move around and break.</span>
