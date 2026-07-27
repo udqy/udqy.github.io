@@ -53,6 +53,18 @@ a:focus-visible {
   }
 }
 
+@media (max-width: 768px) {
+  body {
+    overflow-y: auto;
+  }
+  * {
+    scrollbar-width: none;
+  }
+  *::-webkit-scrollbar {
+    display: none;
+  }
+}
+
 /* prose
   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
