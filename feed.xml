@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en">
+	<title>Uday Jadhav</title>
+	<subtitle>Making machines think, living in Linux, and roaming the internet.</subtitle>
+	<link href="https://udqy.github.io/feed.xml" rel="self" type="application/atom+xml"/>
+    <link href="https://udqy.github.io/"/>
+	<updated>2026-06-01T00:00:00+00:00</updated>
+	<id>https://udqy.github.io/feed.xml</id>
+	<entry xml:lang="en">
+		<title>Software Engineer</title>
+		<published>2026-06-01T00:00:00+00:00</published>
+		<updated>2026-06-01T00:00:00+00:00</updated>
+		<link href="https://udqy.github.io/work/binks-se/" type="text/html"/>
+		<id>https://udqy.github.io/work/binks-se/</id>
+		<content type="html">&lt;ul&gt;
+&lt;li&gt;Integrated the automated pattern grading system into production, enabling real-time garment customization with automatic Shopify data fetching.&lt;&#x2F;li&gt;
+&lt;li&gt;Working on automatic quality control using OpenCV — an AI + IoT project combining computer vision with hardware integration.&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+</content>
+	</entry>
+	<entry xml:lang="en">
+		<title>AI Intern</title>
+		<published>2025-07-01T00:00:00+00:00</published>
+		<updated>2025-07-01T00:00:00+00:00</updated>
+		<link href="https://udqy.github.io/work/binks/" type="text/html"/>
+		<id>https://udqy.github.io/work/binks/</id>
+		<content type="html">&lt;ul&gt;
+&lt;li&gt;Built an AI Agent for Chatwoot integrating real-time Shopify data to automate customer support across channels, improving response efficiency and enabling seamless human handoff for complex queries.&lt;&#x2F;li&gt;
+&lt;li&gt;Reduced pattern creation time from ~40 minutes to under 1 minute, enabling real-time, user-specific garment sizing through automated measurement extraction and base pattern grading.&lt;&#x2F;li&gt;
+&lt;li&gt;Fine-tuned T5 for text-to-CAD pattern generation; processed 18,000+ CAD files.&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+</content>
+	</entry>
+	<entry xml:lang="en">
+		<title>Hello World: My First Blog Post</title>
+		<published>2025-01-15T00:00:00+00:00</published>
+		<updated>2025-01-15T00:00:00+00:00</updated>
+		<link href="https://udqy.github.io/blog/hello-world/" type="text/html"/>
+		<id>https://udqy.github.io/blog/hello-world/</id>
+		<content type="html">&lt;p&gt;I will be writing soon!&lt;&#x2F;p&gt;
+</content>
+	</entry>
+	<entry xml:lang="en">
+		<title>Web Development Intern</title>
+		<published>2024-06-01T00:00:00+00:00</published>
+		<updated>2024-06-01T00:00:00+00:00</updated>
+		<link href="https://udqy.github.io/work/3i-infotech/" type="text/html"/>
+		<id>https://udqy.github.io/work/3i-infotech/</id>
+		<content type="html">&lt;ul&gt;
+&lt;li&gt;Developed an internal feedback tool with role-based access, authentication, and CRUD workflows.&lt;&#x2F;li&gt;
+&lt;li&gt;End-to-end functionality shipped in under 20 days using ASP.NET Core MVC and Entity Framework.&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+</content>
+	</entry>
+	<entry xml:lang="en">
+		<title>Quantum Research Intern</title>
+		<published>2021-07-01T00:00:00+00:00</published>
+		<updated>2021-07-01T00:00:00+00:00</updated>
+		<link href="https://udqy.github.io/work/qworld/" type="text/html"/>
+		<id>https://udqy.github.io/work/qworld/</id>
+		<content type="html">&lt;ul&gt;
+&lt;li&gt;Collaborated within a team of three to develop a website for browsing and listing available Quantum Games.&lt;&#x2F;li&gt;
+&lt;li&gt;The work was subsequently cited in research papers authored by Google Quantum AI.&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+</content>
+	</entry>
+</feed>

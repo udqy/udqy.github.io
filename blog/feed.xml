@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en">
+	<title>Blog</title>
+	<subtitle>My diary on the internet.</subtitle>
+	<link href="https://udqy.github.io/blog/feed.xml" rel="self" type="application/atom+xml"/>
+    <link href="https://udqy.github.io/blog/"/>
+	<updated>2025-01-15T00:00:00+00:00</updated>
+	<id>https://udqy.github.io/blog/feed.xml</id>
+	<entry xml:lang="en">
+		<title>Hello World: My First Blog Post</title>
+		<published>2025-01-15T00:00:00+00:00</published>
+		<updated>2025-01-15T00:00:00+00:00</updated>
+		<link href="https://udqy.github.io/blog/hello-world/" type="text/html"/>
+		<id>https://udqy.github.io/blog/hello-world/</id>
+		<content type="html">&lt;p&gt;I will be writing soon!&lt;&#x2F;p&gt;
+</content>
+	</entry>
+</feed>

@@ -1,0 +1,388 @@
+function enableThemeToggle() {
+  const toggles = document.querySelectorAll('#theme-toggle, .theme-toggle-btn');
+  if (!toggles.length) return;
+  const hlLink = document.querySelector('link#hl');
+  function toggleTheme(theme) {
+    if (theme == "dark") document.body.classList.add('dark'); else document.body.classList.remove('dark');
+    if (hlLink) hlLink.href = `/giallo-${theme}.css`;
+    sessionStorage.setItem("theme", theme);
+    toggleGiscusTheme(theme);
+  }
+  function toggleGiscusTheme(theme) {
+    const iframe = document.querySelector('iframe.giscus-frame');
+    if (iframe) iframe.contentWindow.postMessage({ giscus: { setConfig: { theme: `${location.origin}/giscus_${theme}.css` } } }, 'https://giscus.app');
+  }
+  function initGiscusTheme(evt) {
+    if (evt.origin !== 'https://giscus.app') return;
+    if (!(typeof evt.data === 'object' && evt.data.giscus)) return;
+    toggleGiscusTheme(sessionStorage.getItem("theme") || "light");
+    window.removeEventListener('message', initGiscusTheme);
+  }
+  window.addEventListener('message', initGiscusTheme);
+  toggles.forEach(t => t.addEventListener('click', () => toggleTheme(sessionStorage.getItem("theme") == "dark" ? "light" : "dark")));
+  if (sessionStorage.getItem("theme") == "dark") toggleTheme("dark");
+}
+
+function enablePrerender() {
+  const prerender = (a) => {
+    if (!a.classList.contains('instant')) return;
+    const script = document.createElement('script');
+    script.type = 'speculationrules';
+    script.textContent = JSON.stringify({ prerender: [{ source: 'list', urls: [a.href] }] });
+    document.body.append(script);
+    a.classList.remove('instant');
+  }
+  const prefetch = (a) => {
+    if (!a.classList.contains('instant')) return;
+    const link = document.createElement('link');
+    link.rel = 'prefetch';
+    link.href = a.href;
+    document.head.append(link);
+    a.classList.remove('instant');
+  }
+  const support = HTMLScriptElement.supports && HTMLScriptElement.supports('speculationrules');
+  const handle = support ? prerender : prefetch;
+  document.querySelectorAll('a.instant').forEach(a => {
+    if (a.href.endsWith(window.location.pathname)) return;
+    let timer;
+    a.addEventListener('mouseenter', () => {
+      timer = setTimeout(() => handle(a), 50);
+    });
+    a.addEventListener('mouseleave', () => clearTimeout(timer));
+    a.addEventListener('touchstart', () => handle(a), { passive: true });
+  });
+}
+
+function enableRssMask() {
+  const rssBtn = document.querySelector('#rss-btn');
+  const mask = document.querySelector('#rss-mask');
+  const copyBtn = document.querySelector('#rss-mask button');
+  if (!rssBtn || !mask) return;
+  rssBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    mask.showModal();
+  });
+  const close = (e) => {
+    if (e.target == mask) mask.close();
+  };
+  mask.addEventListener('click', close);
+  const copy = () => {
+    navigator.clipboard.writeText(copyBtn.dataset.link).then(() => {
+      copyBtn.innerHTML = copyBtn.dataset.checkIcon;
+      copyBtn.classList.add('copied');
+      copyBtn.removeEventListener('click', copy);
+      setTimeout(() => {
+        mask.close();
+        copyBtn.innerHTML = copyBtn.dataset.copyIcon;
+        copyBtn.classList.remove('copied');
+        copyBtn.addEventListener('click', copy);
+      }, 400);
+    });
+  }
+  copyBtn.addEventListener('click', copy);
+}
+
+function enableOutdateAlert() {
+  const alert = document.querySelector('#outdate_alert');
+  if (!alert) return;
+  const publish = document.querySelector('#publish');
+  const updated = document.querySelector('#updated');
+  const updateDate = new Date(updated ? updated.textContent : publish.textContent);
+  const intervalDays = Math.floor((Date.now() - updateDate.getTime()) / (24 * 60 * 60 * 1000));
+  const alertDays = parseInt(alert.dataset.days);
+  if (intervalDays >= alertDays) {
+    const msg = alert.dataset.alertTextBefore + intervalDays + alert.dataset.alertTextAfter;
+    alert.querySelector('.content').textContent = msg;
+    alert.classList.remove('hidden');
+  }
+}
+
+function enableTocTooltip() {
+  const anchors = document.querySelectorAll('aside nav a');
+  if (anchors.length == 0) return;
+  const toggleTooltip = () => {
+    anchors.forEach(anchor => {
+      if (anchor.offsetWidth < anchor.scrollWidth) {
+        anchor.setAttribute('title', anchor.textContent);
+      } else {
+        anchor.removeAttribute('title');
+      }
+    });
+  };
+  window.addEventListener('resize', toggleTooltip);
+  toggleTooltip();
+}
+
+function addCopyBtns() {
+  const cfg = document.querySelector('#copy-cfg');
+  if (!cfg) return;
+  const copyIcon = cfg.dataset.copyIcon;
+  const checkIcon = cfg.dataset.checkIcon;
+  document.querySelectorAll('pre').forEach(block => {
+    if (block.classList.contains('mermaid')) return;
+    const wrapper = document.createElement('div');
+    wrapper.className = 'codeblock';
+    const btn = document.createElement('button');
+    btn.className = 'copy';
+    btn.ariaLabel = 'copy';
+    btn.innerHTML = copyIcon;
+    const copy = () => {
+      navigator.clipboard.writeText(block.textContent).then(() => {
+        btn.innerHTML = checkIcon;
+        btn.classList.add('copied');
+        btn.removeEventListener('click', copy);
+        setTimeout(() => {
+          btn.innerHTML = copyIcon;
+          btn.classList.remove('copied');
+          btn.addEventListener('click', copy);
+        }, 1500);
+      });
+    };
+    btn.addEventListener('click', copy);
+    wrapper.appendChild(block.cloneNode(true));
+    wrapper.appendChild(btn);
+    block.replaceWith(wrapper);
+  });
+}
+
+function addBackToTopBtn() {
+  const backBtn = document.querySelector('#back-to-top');
+  if (!backBtn) return;
+  const toTop = () => window.scrollTo({ top: 0 });
+  const toggle = () => {
+    const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+    if (scrollTop > 200 && !backBtn.classList.contains('shown')) {
+      backBtn.classList.add('shown');
+      backBtn.setAttribute('tabindex', 0);
+      backBtn.addEventListener('click', toTop);
+    } else if (scrollTop <= 200 && backBtn.classList.contains('shown')) {
+      backBtn.classList.remove('shown');
+      backBtn.setAttribute('tabindex', -1);
+      backBtn.removeEventListener('click', toTop);
+    }
+  };
+  window.addEventListener('scroll', toggle);
+  toggle();
+}
+
+function addFootnoteBacklink() {
+  const footnotes = document.querySelectorAll('.footnote-definition');
+  footnotes.forEach(footnote => {
+    const backlink = document.createElement('button');
+    backlink.className = 'backlink';
+    backlink.ariaLabel = 'backlink';
+    backlink.innerHTML = '↩︎';
+    backlink.addEventListener('click', () => window.scrollTo({
+      top: document.querySelector(`.footnote-reference a[href="#${footnote.id}"]`).getBoundingClientRect().top + window.scrollY,
+    }));
+    const lastEl = footnote.lastElementChild || footnote;
+    lastEl.appendChild(backlink);
+  });
+}
+
+function enableImgLightense() {
+  window.addEventListener("load", () => Lightense(".prose img:not(.no-lightense)", { background: 'rgba(43, 43, 43, 0.19)' }));
+}
+
+function enableReaction() {
+  const container = document.querySelector('.reaction');
+  if (!container) return;
+  const endpoint = container.dataset.endpoint;
+  const slug = location.pathname.split('/').filter(Boolean).pop();
+  const icons = {
+    'like': '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>'
+  };
+  let state = { error: false, reaction: {} };
+  const render = () => {
+    const btns = Object.entries(state.reaction).map(([emoji, [count, reacted]])=> {
+      const span = document.createElement('span');
+      span.textContent = count;
+      const btn = document.createElement('button');
+      if (reacted) btn.classList.add('reacted');
+      btn.insertAdjacentHTML('afterbegin', icons[emoji] || emoji);
+      btn.append(span);
+      btn.onclick = () => toggle(emoji);
+      return btn;
+    });
+    if (state.error) {
+      container.classList.add('error');
+    } else {
+      container.classList.remove('error');
+    }
+    container.replaceChildren(...btns);
+  };
+  const toggle = async (target) => {
+    const [count, reacted] = state.reaction[target];
+    state.reaction[target] = reacted ? [count - 1, false] : [count + 1, true];
+    render();
+    try {
+      const resp = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ slug, target, reacted: !reacted }),
+      });
+      if (resp.status === 200) {
+        error = false;
+      } else {
+        throw new Error();
+      }
+    } catch (err) {
+      state.error = true;
+      state.reaction[target] = [count, reacted];
+      render();
+    }
+  };
+  const init = async () => {
+    const resp = await fetch(`${endpoint}?slug=${slug}`);
+    if (resp.status === 200) {
+      state.reaction = await resp.json();
+      render();
+    }
+  };
+  init();
+}
+
+enableThemeToggle();
+
+function enableArchToggle() {
+  const body = document.body;
+  const bar = document.querySelector('#arch-bar');
+  const toggleBtn = document.querySelector('#arch-toggle');
+  const powerBtn = document.querySelector('#arch-power');
+  if (!bar && !toggleBtn) return;
+
+  function setArch(on) {
+    body.classList.toggle('theme-arch', on);
+    localStorage.setItem('theme-arch', on ? 'on' : 'off');
+    if (toggleBtn) toggleBtn.setAttribute('aria-pressed', String(on));
+    if (on) {
+      // Play the "window open" animation only on this deliberate toggle, not on
+      // page navigations (the pre-paint guard never adds this class on reload).
+      const wrapper = document.querySelector('#wrapper');
+      if (wrapper) {
+        wrapper.classList.add('hypr-anim');
+        wrapper.addEventListener('animationend', () => wrapper.classList.remove('hypr-anim'), { once: true });
+      }
+      loadArchVisitors();
+    }
+  }
+
+  if (toggleBtn) {
+    toggleBtn.setAttribute('aria-pressed', String(body.classList.contains('theme-arch')));
+    toggleBtn.addEventListener('click', () => setArch(!body.classList.contains('theme-arch')));
+  }
+  if (powerBtn) powerBtn.addEventListener('click', () => setArch(false));
+
+  // Focused-window title in the bar centre = the page title.
+  const titleEl = document.querySelector('#arch-window-title');
+  if (titleEl) titleEl.textContent = (document.title || 'uday@arch').trim();
+
+  // Highlight the workspace for the current page (posts live under /blog).
+  const path = location.pathname;
+  document.querySelectorAll('#arch-ws .ws').forEach(ws => {
+    const href = ws.getAttribute('href');
+    const match = href === '/' ? (path === '/' || path === '') : path.startsWith(href);
+    ws.classList.toggle('active', match);
+  });
+
+  // Bar clock.
+  const clock = document.getElementById('arch-clock');
+  if (clock) {
+    const tick = () => {
+      const d = new Date();
+      clock.textContent = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+    };
+    tick();
+    setInterval(tick, 10000);
+  }
+
+  // Reading progress — how far down the page you've scrolled. Honest, and the
+  // one bar metric that actually reacts to what the reader is doing.
+  const readEl = document.getElementById('arch-read');
+  if (readEl) {
+    const doc = document.documentElement;
+    let raf = 0;
+    const updRead = () => {
+      raf = 0;
+      const max = doc.scrollHeight - doc.clientHeight;
+      const pct = max > 8 ? Math.round((doc.scrollTop || 0) / max * 100) : 0;
+      readEl.textContent = `${Math.max(0, Math.min(100, pct))}%`;
+    };
+    const onScroll = () => { if (!raf) raf = requestAnimationFrame(updRead); };
+    addEventListener('scroll', onScroll, { passive: true });
+    addEventListener('resize', onScroll, { passive: true });
+    updRead();
+  }
+
+  // Memory module: this tab's real JS heap (Chromium-only via performance.memory).
+  // Where the browser doesn't expose it (Firefox/Safari) the whole module hides
+  // rather than showing an invented number.
+  const memEl = document.getElementById('arch-mem');
+  const memMod = document.getElementById('arch-mem-mod');
+  const heap = performance.memory; // non-standard; undefined outside Chromium
+  if (memEl && heap) {
+    const updMem = () => {
+      const mb = heap.usedJSHeapSize / 1048576;
+      memEl.textContent = mb >= 1000 ? `${(mb / 1024).toFixed(1)}G` : `${Math.round(mb)}M`;
+    };
+    updMem();
+    setInterval(updMem, 2000);
+  } else if (memMod) {
+    memMod.hidden = true;
+  }
+
+  // Live visitor count in the bar (reuses the homepage endpoint, a read-only
+  // proxy). Kick off once now if the bar is already on screen; setArch fires it
+  // when the reader toggles into rice mode. loadArchVisitors is idempotent.
+  if (body.classList.contains('theme-arch')) loadArchVisitors();
+
+}
+
+// Fetch the visitor count into the bar module. Guarded so it runs at most once.
+function loadArchVisitors() {
+  const visMod = document.getElementById('arch-vis-mod');
+  if (!visMod || visMod.dataset.loaded) return;
+  visMod.dataset.loaded = '1';
+  fetch(visMod.dataset.endpoint)
+    .then(r => r.ok ? r.json() : Promise.reject(r.status))
+    .then(({ visitors }) => {
+      if (typeof visitors !== 'number') return;
+      const val = document.getElementById('arch-vis');
+      if (val) val.textContent = visitors.toLocaleString();
+      visMod.hidden = false;
+    })
+    .catch(() => { /* stay hidden rather than show a broken count */ });
+}
+
+function enableVisitorCount() {
+  const el = document.querySelector('#visitor-count');
+  if (!el) return;
+
+  fetch(el.dataset.endpoint)
+    .then(resp => resp.ok ? resp.json() : Promise.reject(resp.status))
+    .then(({ visitors }) => {
+      if (typeof visitors !== 'number') return;
+      // toLocaleString gives the reader their own thousands separator.
+      el.textContent = `${visitors.toLocaleString()} ${el.dataset.text}`;
+      el.hidden = false;
+    })
+    .catch(() => { /* leave it hidden rather than show a broken or zero count */ });
+}
+
+enableArchToggle();
+enableVisitorCount();
+enablePrerender();
+enableRssMask();
+if (document.body.classList.contains('post')) {
+  enableOutdateAlert();
+  addBackToTopBtn();
+  enableTocTooltip();
+}
+if (document.querySelector('.prose')) {
+  addCopyBtns();
+  addFootnoteBacklink();
+  enableImgLightense();
+  enableReaction();
+}
